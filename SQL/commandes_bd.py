@@ -182,6 +182,9 @@ def insert_performance(connexion_bd, id_musicien, id_morceau, date_perf):
                    [id_musicien, id_morceau, date_perf])
     connexion_bd.commit()
 
+    cursor.execute("SELECT MAX(idPerf) FROM Performance;")
+    return cursor.fetchone()[0]
+
 
 def update_lvl_musicien(connexion_bd, id_musicien, niveau):
     """
@@ -195,6 +198,22 @@ def update_lvl_musicien(connexion_bd, id_musicien, niveau):
     cursor.execute("UPDATE Musicien SET niveau = %s WHERE idMusicien = %s;", [niveau, id_musicien])
     connexion_bd.commit()
 
+def get_nb_fausses_notes(connexion_bd, id_perf):
+    """
+    Extrait le nombre de fausses notes d'une performance donnée.
+
+    Paramètres :
+        int id_perf: Identifiant de la performance
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute(
+        "SELECT t.note, t.tpsPresse, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut ASC;",
+        [id_perf])
+    notes_ref = cursor.fetchall()
+    cursor.execute(
+        "SELECT t.note, t.tpsPresse, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut ASC;",
+        [id_perf])
+    notes_jouee = cursor.fetchall()
 
 def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, bpm_moy, niveau_estime):
     """
@@ -250,6 +269,16 @@ def get_musiciens(connexion_bd):
     return cursor.fetchall()
 
 def get_perf(connexion_bd, idMusicien, idMorceau):
+    """
+    Récupère :
+    Le nom du musicien, du morceau, la date de la performance, le nb de fausses notes, 
+    le nb de notes totales (pour calculer la ratio de précision), le BPM estimé
+    le niveau actuel du musicien, le niveau estimé du musicien
+    Renvoi :
+    Un tuple contenant le nom du musicien, du morceau, la date de la performance, 
+    le nb de fausses notes, le ratio de précision, le BPM estimé
+    le niveau actuel du musicien, le niveau estimé du musicien
+    """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT mo.nom as Nom du Musicien, mu.titre as Titre du Morceau, p.datePerf as Date de la Performance, p.nbFaussesNotes as Nb Fausses Notes, (p.nbNotesTotal-p.nbFaussesNotes)/p.nbNotesTotal as Ratio de Précision, p.bpmMoy as BPM Moyen, mu.niveau as Ancien Niveau, p.niveauEstime as Niveau Estimé"
                    +"FROM Musicien mu, Morceau mo, Performance p"
@@ -258,11 +287,17 @@ def get_perf(connexion_bd, idMusicien, idMorceau):
     return cursor.fetchall()
 
 def get_BPM(connexion_bd):
+    """
+    Récupère le BPM et le temps depuis le début
+    """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM")
     return cursor.fetchall()
 
 def get_accelero(connexion_bd):
+    """
+    Récupère les valeurs de l'acceléro en X et en Y ainsi que le temps depuis le début
+    """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut as Temps depuis Début FROM MesureAccelero")
     return cursor.fetchall()
