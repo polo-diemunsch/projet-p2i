@@ -255,3 +255,8 @@ def get_perf(connexion_bd, idMusicien, idMorceau):
                    +"WHERE p.idMusicien = %s, p.idMorceau = %s, mu.idMusicien = p.idMusicien, mo.idMorceau = p.idMorceau"
                    +"ORDER BY p.datePerf ASC", [idMusicien, idMorceau])
     return cursor.fetchall()
+
+def get_BPM(connexion_bd):
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM")
+    return cursor.fetchall()
