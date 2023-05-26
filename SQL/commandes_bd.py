@@ -223,7 +223,18 @@ def get_nb_fausses_notes(connexion_bd, id_perf):
             if notes_refs[0] != notes_jouees[0]:
                 nb_fausse_notes += 1
 
+def get_nb_notes(connexion_bd, id_perf):
+    """
+    Extrait le nombre de notes d'un morceau.
 
+    Paramètres :
+        int id_perf: Identifiant de la performance
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute(
+        "SELECT COUNT(t.note) FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau;",
+        [id_perf])
+    return cursor.fetchone()[0]
 
 
 def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, bpm_moy, niveau_estime):
