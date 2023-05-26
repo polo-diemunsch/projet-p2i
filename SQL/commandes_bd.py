@@ -260,3 +260,8 @@ def get_BPM(connexion_bd):
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM")
     return cursor.fetchall()
+
+def get_accelero(connexion_bd):
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut as Temps depuis Début FROM MesureAccelero")
+    return cursor.fetchall()
