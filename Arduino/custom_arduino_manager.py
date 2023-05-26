@@ -48,4 +48,13 @@ class CustomArduinoManager:
         print()
 
     def glove_callback(self, input_line):
-        pass
+        print(f"Trame reçue : {input_line}")
+        accelerox = int.from_bytes(input_line[0:2], "little")
+        acceleroy = int.from_bytes(input_line[2:4], "little")
+        frequence_cardiaque = int.from_bytes(input_line[4:5], "little")
+        pression_doigts = int.from_bytes(input_line[5:6], "little")
+        print(f"accelrox décodée: {accelerox}")
+        print(f"acceleroy décodée: {acceleroy}")
+        print(f"frequence_cardiaque décodée: {frequence_cardiaque}")
+        print(f"pression_doigts décodée: {pression_doigts}")
+        print()
