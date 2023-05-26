@@ -42,7 +42,10 @@ class CustomArduinoManager:
             self.glove_manager.run_listening()
 
     def mic_callback(self, input_line):
-        pass
+        print("Fréquences reçues :")
+        for i in range(0, len(input_line), 2):
+            print(int.from_bytes(input_line[i:i + 2], "little"))
+        print()
 
     def glove_callback(self, input_line):
         pass

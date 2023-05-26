@@ -94,13 +94,15 @@ class App(tk.Tk):
 
         self.connection_mic_state_label = tk.Label(self.side_panel, text="Le micro est déconnecté", font=(self.theme["font"], "11"),
                                                    fg="red", bg=self.theme["bg"])
-        self.connection_mic_state_label.grid(row=i, column=0, columnspan=2)
+        self.connection_mic_state_label.grid(row=i, column=0)
+
+        # self.
 
         i += 1
 
         self.connection_glove_state_label = tk.Label(self.side_panel, text="Le micro est déconnecté", font=(self.theme["font"], "11"),
                                                      fg="red", bg=self.theme["bg"])
-        self.connection_glove_state_label.grid(row=i, column=0, columnspan=2, sticky="n")
+        self.connection_glove_state_label.grid(row=i, column=0, sticky="n")
 
         i += 1
 
