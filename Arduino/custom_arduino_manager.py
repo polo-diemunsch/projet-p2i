@@ -25,7 +25,7 @@ class CustomArduinoManager:
 
             if "Uno" in description:
                 port_mic = port
-            elif "[giyehsjd]" in description:
+            elif "MKR WAN 1310" in description:
                 port_glove = port
 
         if port_mic is None or port_glove is None:

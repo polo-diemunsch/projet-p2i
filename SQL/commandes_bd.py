@@ -24,7 +24,8 @@ def ouvrir_connexion_bd():
                 password=creds_bd["password"],
                 database=creds_bd["database"]
         )
-        print("=> Connexion établie...")
+        print("=> Connexion établie avec la base de donnée")
+        print()
     except Exception as e:
         print("MySQL [ERROR]")
         print(e)
@@ -37,11 +38,11 @@ def fermer_connexion_bd(connexion_bd):
     Ferme la connexion à la base de données.
     """
     print("")
-    print("Fermeture de la Connexion à la BD")
+    print("Fermeture de la connexion à la BD")
 
     try:
         connexion_bd.close()
-        print("=> Connexion fermée...")
+        print("=> Connexion à la base de données fermée")
     except Exception as e:
         print("MySQL [ERROR]")
         print(e)

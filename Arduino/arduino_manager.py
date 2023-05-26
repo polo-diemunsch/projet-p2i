@@ -18,7 +18,7 @@ class ArduinoManager:
         self._serial_connection = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout)
 
     def run_listening(self):
-        self._listening_thread = threading.Thread(target=self._listening_method, args=(self,))
+        self._listening_thread = threading.Thread(target=self._listening_method)
         self._listening_thread.start()
 
     def close(self):
@@ -36,17 +36,11 @@ class ArduinoManager:
         if self._serial_connection is not None:
             self._serial_connection.write(bytes(output_line + '\n', 'utf-8'))
 
-    def read_one_line(self):
-        return self._serial_connection.readline().decode("utf-8").strip()
-
     def _listening_method(self):
         try:
             while True:
-                # input_line = self._serial_connection.readline().decode("utf-8").strip()
                 input_line = self._serial_connection.readline()
                 if input_line:
-                    # print('ARDUINO >>> ', end='')
-                    # print(input_line)
                     if self._on_input_line_callback is not None:
                         try:
                             self._on_input_line_callback(input_line)
