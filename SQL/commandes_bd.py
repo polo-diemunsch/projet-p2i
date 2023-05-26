@@ -247,3 +247,11 @@ def get_musiciens(connexion_bd):
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT idMusicien, nom, niveau FROM Musicien")
     return cursor.fetchall()
+
+def get_perf(connexion_bd, idMusicien, idMorceau):
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT mo.nom as Nom du Musicien, mu.titre as Titre du Morceau, p.datePerf as Date de la Performance, p.nbFaussesNotes as Nb Fausses Notes, (p.nbNotesTotal-p.nbFaussesNotes)/p.nbNotesTotal as Ratio de Précision, p.bpmMoy as BPM Moyen, mu.niveau as Ancien Niveau, p.niveauEstime as Niveau Estimé"
+                   +"FROM Musicien mu, Morceau mo, Performance p"
+                   +"WHERE p.idMusicien = %s, p.idMorceau = %s, mu.idMusicien = p.idMusicien, mo.idMorceau = p.idMorceau"
+                   +"ORDER BY p.datePerf ASC", [idMusicien, idMorceau])
+    return cursor.fetchall()
