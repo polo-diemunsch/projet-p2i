@@ -208,11 +208,22 @@ def get_nb_fausses_notes(connexion_bd, id_perf):
     cursor.execute(
         "SELECT t.note, t.tpsPresse, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut ASC;",
         [id_perf])
-    notes_ref = cursor.fetchall()
+    notes_refs = cursor.fetchall()
     cursor.execute(
-        "SELECT t.note, t.tpsPresse, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut ASC;",
+        "SELECT note, tpsPresse, tpsDepuisDebut FROM MesureTouche WHERE idPerf = %s ORDER BY tpsDepuisDebut ASC;",
         [id_perf])
-    notes_jouee = cursor.fetchall()
+    notes_jouees = cursor.fetchall()
+
+    intervalle_tps = 0.300
+    nb_fausses_notes = 0
+
+    if len(notes_refs) == len(notes_jouees):
+        for i in range(len(notes_refs)):
+            if notes_refs[0] != notes_jouees[0]:
+                nb_fausse_notes += 1
+
+
+
 
 def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, bpm_moy, niveau_estime):
     """
