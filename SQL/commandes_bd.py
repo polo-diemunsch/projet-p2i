@@ -181,6 +181,9 @@ def insert_performance(connexion_bd, id_musicien, id_morceau, date_perf):
                    [id_musicien, id_morceau, date_perf])
     connexion_bd.commit()
 
+    cursor.execute("SELECT MAX(idPerf) FROM Performance;")
+    return cursor.fetchone()[0]
+
 
 def update_lvl_musicien(connexion_bd, id_musicien, niveau):
     """
@@ -194,6 +197,22 @@ def update_lvl_musicien(connexion_bd, id_musicien, niveau):
     cursor.execute("UPDATE Musicien SET niveau = %s WHERE idMusicien = %s;", [niveau, id_musicien])
     connexion_bd.commit()
 
+def get_nb_fausses_notes(connexion_bd, id_perf):
+    """
+    Extrait le nombre de fausses notes d'une performance donnée.
+
+    Paramètres :
+        int id_perf: Identifiant de la performance
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute(
+        "SELECT t.note, t.tpsPresse, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut ASC;",
+        [id_perf])
+    notes_ref = cursor.fetchall()
+    cursor.execute(
+        "SELECT t.note, t.tpsPresse, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut ASC;",
+        [id_perf])
+    notes_jouee = cursor.fetchall()
 
 def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, bpm_moy, niveau_estime):
     """
