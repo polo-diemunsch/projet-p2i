@@ -249,6 +249,16 @@ def get_musiciens(connexion_bd):
     return cursor.fetchall()
 
 def get_perf(connexion_bd, idMusicien, idMorceau):
+    """
+    Récupère :
+    Le nom du musicien, du morceau, la date de la performance, le nb de fausses notes, 
+    le nb de notes totales (pour calculer la ratio de précision), le BPM estimé
+    le niveau actuel du musicien, le niveau estimé du musicien
+    Renvoi :
+    Un tuple contenant le nom du musicien, du morceau, la date de la performance, 
+    le nb de fausses notes, le ratio de précision, le BPM estimé
+    le niveau actuel du musicien, le niveau estimé du musicien
+    """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT mo.nom as Nom du Musicien, mu.titre as Titre du Morceau, p.datePerf as Date de la Performance, p.nbFaussesNotes as Nb Fausses Notes, (p.nbNotesTotal-p.nbFaussesNotes)/p.nbNotesTotal as Ratio de Précision, p.bpmMoy as BPM Moyen, mu.niveau as Ancien Niveau, p.niveauEstime as Niveau Estimé"
                    +"FROM Musicien mu, Morceau mo, Performance p"
@@ -257,11 +267,17 @@ def get_perf(connexion_bd, idMusicien, idMorceau):
     return cursor.fetchall()
 
 def get_BPM(connexion_bd):
+    """
+    Récupère le BPM et le temps depuis le début
+    """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM")
     return cursor.fetchall()
 
 def get_accelero(connexion_bd):
+    """
+    Récupère les valeurs de l'acceléro en X et en Y ainsi que le temps depuis le début
+    """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut as Temps depuis Début FROM MesureAccelero")
     return cursor.fetchall()
