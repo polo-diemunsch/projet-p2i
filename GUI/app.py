@@ -53,6 +53,10 @@ class App(tk.Tk):
 
         self.tiles = []
 
+        self.musician_selected = False
+        self.mic_connected = False
+        self.glove_connected = False
+
         self.top_level_add_musician = None
 
         self.create_widgets()
@@ -80,7 +84,7 @@ class App(tk.Tk):
 
         self.side_panel.grid_propagate(False)
 
-        for i in range(13):
+        for i in range(14):
             self.side_panel.grid_rowconfigure(i, weight=1)
         for i in range(2):
             self.side_panel.grid_columnconfigure(i, weight=1)
@@ -94,21 +98,25 @@ class App(tk.Tk):
 
         self.connection_mic_state_label = tk.Label(self.side_panel, text="Le micro est déconnecté", font=(self.theme["font"], "11"),
                                                    fg="red", bg=self.theme["bg"])
-        self.connection_mic_state_label.grid(row=i, column=0)
-
-        # self.
+        self.connection_mic_state_label.grid(row=i, column=0, columnspan=2)
 
         i += 1
 
         self.connection_glove_state_label = tk.Label(self.side_panel, text="Le micro est déconnecté", font=(self.theme["font"], "11"),
                                                      fg="red", bg=self.theme["bg"])
-        self.connection_glove_state_label.grid(row=i, column=0, sticky="n")
+        self.connection_glove_state_label.grid(row=i, column=0, columnspan=2, sticky="n")
+
+        i += 1
+
+        self.connect_arduino_button = tk.Button(self.side_panel, text="Vérifier connection", command=lambda: self.custom_arduino_manager.init_managers(),
+                                                font=(self.theme["font"], "12"), bg=self.theme["button_bg"])
+        self.connect_arduino_button.grid(row=i, column=0, columnspan=2, sticky="n")
 
         i += 1
 
         widget = tk.Button(self.side_panel, text="Ajouter un musicien", command=self.pop_add_musician_top_level,
                            font=(self.theme["font"], "12"), bg=self.theme["button_bg"])
-        widget.grid(row=i, column=0, columnspan=2)
+        widget.grid(row=i, column=0, columnspan=2, sticky="s")
 
         i += 1
 
@@ -224,9 +232,11 @@ class App(tk.Tk):
         Se déconnecte de la base de données et ferme l'application.
         """
         cbd.fermer_connexion_bd(self.connexion_bd)
+        self.custom_arduino_manager.close()
         self.destroy()
 
     def update_arduino_connection_state(self, mic_connected, glove_connected):
+        self.mic_connected = mic_connected
         if mic_connected:
             self.connection_mic_state_label["text"] = "Le micro est connecté"
             self.connection_mic_state_label["fg"] = "green"
@@ -234,12 +244,18 @@ class App(tk.Tk):
             self.connection_mic_state_label["text"] = "Le micro est déconnecté"
             self.connection_mic_state_label["fg"] = "red"
 
+        self.glove_connected = glove_connected
         if glove_connected:
             self.connection_glove_state_label["text"] = "Le gant est connecté"
             self.connection_glove_state_label["fg"] = "green"
         else:
             self.connection_glove_state_label["text"] = "Le gant est déconnecté"
             self.connection_glove_state_label["fg"] = "red"
+
+        if mic_connected and glove_connected:
+            self.connect_arduino_button["state"] = tk.DISABLED
+
+        self.update_play_stop_button_state()
 
     def pop_add_musician_top_level(self):
         """
@@ -353,7 +369,8 @@ class App(tk.Tk):
         self.musician_name_var.set(nom)
         self.musician_level_var.set(niveau)
 
-        self.play_stop_button["state"] = tk.NORMAL
+        self.musician_selected = True
+        self.update_play_stop_button_state()
 
     def load_song(self, event=None):
         """
@@ -419,3 +436,8 @@ class App(tk.Tk):
             self.load_song()
             self.play_stop_button["text"] = "Jouer !"
 
+    def update_play_stop_button_state(self):
+        if self.musician_selected and self.mic_connected and self.glove_connected:
+            self.play_stop_button["state"] = tk.NORMAL
+        else:
+            self.play_stop_button["state"] = tk.DISABLED
