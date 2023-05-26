@@ -15,6 +15,8 @@ class ArduinoManager:
         self.timeout = timeout
         self._listening_thread = None
 
+        self.stop = False
+
         self._serial_connection = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout)
 
     def run_listening(self):
@@ -23,6 +25,8 @@ class ArduinoManager:
 
     def close(self):
         print('CLOSING Arduino connection')
+
+        self.stop = True
 
         if self._serial_connection is not None:
             self._serial_connection.close()
@@ -38,12 +42,12 @@ class ArduinoManager:
 
     def _listening_method(self):
         try:
-            while True:
+            while not self.stop:
                 input_line = self._serial_connection.readline()
                 if input_line:
                     if self._on_input_line_callback is not None:
                         try:
-                            self._on_input_line_callback(input_line)
+                            self._on_input_line_callback(input_line.strip())
                         except Exception as ex:
                             print('Exception with on_input_line Callback: ' + str(ex))
 
@@ -52,6 +56,7 @@ class ArduinoManager:
             print(e)
 
         print('Listening Thread stopping')
+        print()
 
     @staticmethod
     def trouver_ports_arduino():

@@ -1,5 +1,7 @@
 from Arduino.arduino_manager import ArduinoManager
 
+from time import time
+
 
 class CustomArduinoManager:
     """
@@ -14,6 +16,8 @@ class CustomArduinoManager:
         self.glove_manager = None
 
         self.init_managers()
+
+        self.t = time()
 
     def init_managers(self):
         ports = ArduinoManager.trouver_ports_arduino()
@@ -42,10 +46,19 @@ class CustomArduinoManager:
             self.glove_manager.run_listening()
 
     def mic_callback(self, input_line):
-        print("Fréquences reçues :")
-        for i in range(0, len(input_line), 2):
-            print(int.from_bytes(input_line[i:i + 2], "little"))
-        print()
+        # frequencies_with_amplitudes = []
+        #
+        # half_length = len(input_line)//2
+        #
+        # for i in range(0, half_length, 2):
+        #     frequencies_with_amplitudes.append((int.from_bytes(input_line[i:i + 2], "little"),
+        #                                         int.from_bytes(input_line[half_length + i:half_length + i + 2], "little")))
+        #
+        # print(frequencies_with_amplitudes)
+        # print(time() - self.t)
+        # self.t = time()
+
+        pass
 
     def glove_callback(self, input_line):
         print(f"Trame reçue : {input_line}")
@@ -57,4 +70,15 @@ class CustomArduinoManager:
         print(f"acceleroy décodée: {acceleroy}")
         print(f"frequence_cardiaque décodée: {frequence_cardiaque}")
         print(f"pression_doigts décodée: {pression_doigts}")
+        print(time() - self.t)
+        self.t = time()
         print()
+
+        # pass
+
+    def close(self):
+        if self.mic_manager is not None:
+            self.mic_manager.close()
+
+        if self.glove_manager is not None:
+            self.glove_manager.close()

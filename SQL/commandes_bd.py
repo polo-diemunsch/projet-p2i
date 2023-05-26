@@ -43,6 +43,7 @@ def fermer_connexion_bd(connexion_bd):
     try:
         connexion_bd.close()
         print("=> Connexion à la base de données fermée")
+        print()
     except Exception as e:
         print("MySQL [ERROR]")
         print(e)
