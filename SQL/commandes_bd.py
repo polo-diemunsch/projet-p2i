@@ -198,51 +198,6 @@ def update_lvl_musicien(connexion_bd, id_musicien, niveau):
     cursor.execute("UPDATE Musicien SET niveau = %s WHERE idMusicien = %s;", [niveau, id_musicien])
     connexion_bd.commit()
 
-def get_nb_fausses_notes(connexion_bd, id_perf):
-    """
-    Extrait le nombre de fausses notes d'une performance donnée.
-
-    Paramètres :
-        int id_perf: Identifiant de la performance
-    """
-    cursor = connexion_bd.cursor()
-    cursor.execute(
-        "SELECT t.note, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut DESC;",
-        [id_perf])
-    notes_refs = cursor.fetchall()
-    cursor.execute(
-        "SELECT note, tpsDepuisDebut FROM MesureTouche WHERE idPerf = %s ORDER BY tpsDepuisDebut DESC;",
-        [id_perf])
-    notes_jouees = cursor.fetchall()
-
-    tolerance_tps = 0.150
-    nb_bonnes_notes = 0
-
-    for note_r, tps_r in notes_refs:
-        for note_j, tps_j in notes_jouees:
-            if note_j == note_r and abs(tps_r-tps_j) < tolerance_tps:
-                nb_bonnes_notes += 1
-
-    nb_fausses_notes = len(notes_refs) - nb_bonnes_notes
-    return nb_fausses_notes
-
-
-
-
-
-def get_nb_notes(connexion_bd, id_perf):
-    """
-    Extrait le nombre de notes d'un morceau.
-
-    Paramètres :
-        int id_perf: Identifiant de la performance
-    """
-    cursor = connexion_bd.cursor()
-    cursor.execute(
-        "SELECT COUNT(t.note) FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau;",
-        [id_perf])
-    return cursor.fetchone()[0]
-
 
 def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, bpm_moy, niveau_estime):
     """
@@ -330,3 +285,51 @@ def get_accelero(connexion_bd):
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut as Temps depuis Début FROM MesureAccelero")
     return cursor.fetchall()
+
+def get_nb_fausses_notes(connexion_bd, id_perf):
+    """
+    Extrait le nombre de fausses notes d'une performance donnée.
+
+    Paramètres :
+        int id_perf: Identifiant de la performance
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute(
+        "SELECT t.note, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut DESC;",
+        [id_perf])
+    notes_refs = cursor.fetchall()
+    cursor.execute(
+        "SELECT note, tpsDepuisDebut FROM MesureTouche WHERE idPerf = %s ORDER BY tpsDepuisDebut DESC;",
+        [id_perf])
+    notes_jouees = cursor.fetchall()
+
+    tolerance_tps = 0.150
+    nb_bonnes_notes = 0
+
+    for note_r, tps_r in notes_refs:
+        for note_j, tps_j in notes_jouees:
+            if note_j == note_r and abs(tps_r-tps_j) < tolerance_tps:
+                nb_bonnes_notes += 1
+
+    nb_fausses_notes = len(notes_refs) - nb_bonnes_notes
+    return nb_fausses_notes
+
+
+def get_nb_notes(connexion_bd, id_perf):
+    """
+    Extrait le nombre de notes d'un morceau.
+
+    Paramètres :
+        int id_perf: Identifiant de la performance
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute(
+        "SELECT COUNT(t.note) FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau;",
+        [id_perf])
+    return cursor.fetchone()[0]
+
+def get_bpm_moyen(connexion_bd, id_perf):
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT AVG(valeur) FROM MesureBPM WHERE idPerf = %s",
+                   [id_perf])
+    return cursor.fetchone()[0]
