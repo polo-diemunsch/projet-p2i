@@ -270,20 +270,22 @@ def get_perf(connexion_bd, idMusicien, idMorceau):
                    +"ORDER BY p.datePerf ASC", [idMusicien, idMorceau])
     return cursor.fetchall()
 
-def get_BPM(connexion_bd):
+def get_BPM(connexion_bd, id_perf):
     """
     Récupère le BPM et le temps depuis le début
     """
     cursor = connexion_bd.cursor()
-    cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM")
+    cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM WHERE idPerf=%s",
+                   [id_perf])
     return cursor.fetchall()
 
-def get_accelero(connexion_bd):
+def get_accelero(connexion_bd, id_perf):
     """
     Récupère les valeurs de l'acceléro en X et en Y ainsi que le temps depuis le début
     """
     cursor = connexion_bd.cursor()
-    cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut as Temps depuis Début FROM MesureAccelero")
+    cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut as Temps depuis Début FROM MesureAccelero WHERE idPerf=%s",
+                   [id_perf])
     return cursor.fetchall()
 
 def get_nb_fausses_notes(connexion_bd, id_perf):
