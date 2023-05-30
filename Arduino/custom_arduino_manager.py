@@ -1,6 +1,5 @@
 from Arduino.arduino_manager import ArduinoManager
-
-from time import time
+import time
 
 
 class CustomArduinoManager:
@@ -15,11 +14,18 @@ class CustomArduinoManager:
         self.mic_manager = None
         self.glove_manager = None
 
+        self.recording = False
+
         self.init_managers()
 
-        self.t = time()
+        self.t1 = time.time()
+        self.t2 = time.time()
 
     def init_managers(self):
+        """
+        Reconnait les cartes (Uno pour le micro et MKR WAN pour le gant) et initialise les deux managers.
+        Si les deux cartes sont reconnues, lance l'écoute des données reçues.
+        """
         ports = ArduinoManager.trouver_ports_arduino()
 
         port_mic = None
@@ -46,37 +52,60 @@ class CustomArduinoManager:
             self.glove_manager.run_listening()
 
     def mic_callback(self, input_line):
-        # frequencies_with_amplitudes = []
-        #
-        # half_length = len(input_line)//2
-        #
-        # for i in range(0, half_length, 2):
-        #     frequencies_with_amplitudes.append((int.from_bytes(input_line[i:i + 2], "little"),
-        #                                         int.from_bytes(input_line[half_length + i:half_length + i + 2], "little")))
-        #
-        # print(frequencies_with_amplitudes)
-        # print(time() - self.t)
-        # self.t = time()
+        """
+        Traite les données reçues du micro puis les envois à l'application.
 
-        pass
+        Paramètres :
+            bytes input_line: données brutes reçues de l'Arduino du micro
+        """
+        if self.recording:
+            frequencies_with_amplitudes = []
+
+            half_length = len(input_line)//2
+
+            for i in range(0, half_length, 2):
+                frequencies_with_amplitudes.append((int.from_bytes(input_line[i:i + 2], "little"),
+                                                    int.from_bytes(input_line[half_length + i:half_length + i + 2], "little")))
+
+            # print(frequencies_with_amplitudes)
+            # print(time.time() - self.t1)
+            # self.t1 = time.time()
+            # print()
+
+            self.app.get_mic_values(frequencies_with_amplitudes)
 
     def glove_callback(self, input_line):
-        print(f"Trame reçue : {input_line}")
-        accelerox = int.from_bytes(input_line[0:2], "little")
-        acceleroy = int.from_bytes(input_line[2:4], "little")
-        frequence_cardiaque = int.from_bytes(input_line[4:5], "little")
-        pression_doigts = int.from_bytes(input_line[5:6], "little")
-        print(f"accelrox décodée: {accelerox}")
-        print(f"acceleroy décodée: {acceleroy}")
-        print(f"frequence_cardiaque décodée: {frequence_cardiaque}")
-        print(f"pression_doigts décodée: {pression_doigts}")
-        print(time() - self.t)
-        self.t = time()
-        print()
+        """
+        Traite les données reçues du gant puis les envois à l'application.
 
-        # pass
+        Paramètres :
+            bytes input_line: données brutes reçues de l'Arduino de transmission du gant
+        """
+        if self.recording:
+            accelero_x = int.from_bytes(input_line[0:2], "little")
+            accelero_y = int.from_bytes(input_line[2:4], "little")
+            frequence_cardiaque = int.from_bytes(input_line[4:5], "little")
+            pression_doigts = int.from_bytes(input_line[5:6], "little")
+            pression_doigts_individuels = []
+            for i in range(5):
+                pression_doigts_individuels.append(bool((pression_doigts >> i) & 1))
+
+            # print(f"Trame reçue : {input_line}")
+            # print(f"accelro_x décodée: {accelero_x}")
+            # print(f"accelero_y décodée: {accelero_y}")
+            # print(f"frequence_cardiaque décodée: {frequence_cardiaque}")
+            # print(f"pression_doigts décodée: {pression_doigts}")
+            # print(f"pression_doigts_individuels: {pression_doigts_individuels}")
+            # print(time.time() - self.t2)
+            # self.t2 = time.time()
+            # print()
+
+            self.app.get_glove_values(accelero_x, accelero_y, frequence_cardiaque, pression_doigts_individuels)
 
     def close(self):
+        """
+        Ferme les connexions aux Arduino en vue de fermer l'application.
+        """
         if self.mic_manager is not None:
             self.mic_manager.close()
 

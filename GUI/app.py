@@ -53,6 +53,10 @@ class App(tk.Tk):
 
         self.tiles = []
 
+        self.mic_values = []
+        self.glove_values = []
+        self.time_start = None
+
         self.musician_selected = False
         self.mic_connected = False
         self.glove_connected = False
@@ -235,7 +239,36 @@ class App(tk.Tk):
         self.custom_arduino_manager.close()
         self.destroy()
 
+    def get_mic_values(self, frequencies_with_amplitudes):
+        """
+        Stocke les données du micro envoyées depuis le manager Arduino en ajoutant le temps depuis le début du morceau.
+
+        Paramètres :
+            tuple(int, int) frequencies_with_amplitudes: Fréquences et amplitudes calculées sur l'Arduino du micro
+        """
+        self.mic_values.append((time.time() - self.time_start, frequencies_with_amplitudes))
+
+    def get_glove_values(self, accelero_x, accelero_y, frequence_cardiaque, pression_doigts_individuels):
+        """
+        Stocke les données du gant envoyées depuis le manager Arduino en ajoutant le temps depuis le début du morceau.
+
+        Paramètres :
+            int accelero_x: Valeur en X de l'accéléromètre
+            int accelero_y: Valeur en Y de l'accéléromètre
+            int frequence_cardiaque: Valeur de fréquence cardiaque
+            list(bool) pression_doigts_individuels: Valeurs d'appui de chaque doigt
+        """
+        self.glove_values.append((time.time() - self.time_start, pression_doigts_individuels, frequence_cardiaque,
+                                  accelero_x, accelero_y))
+
     def update_arduino_connection_state(self, mic_connected, glove_connected):
+        """
+        Met à jour les textes indiquant l'état de connection des cartes du micro et du gant.
+
+        Paramètres :
+            bool mic_connected: État de connection de la carte du micro
+            bool glove_connected: État de connection de la carte de transmission du gant
+        """
         self.mic_connected = mic_connected
         if mic_connected:
             self.connection_mic_state_label["text"] = "Le micro est connecté"
@@ -429,14 +462,23 @@ class App(tk.Tk):
         Change le texte du bouton jouer/stop et appelle la fonction correspondante en fonction de son texte actuel.
         """
         if self.play_stop_button["text"] == "Jouer !":
-            self.after_id = self.after(10, self.move_tiles, time.time())
             self.play_stop_button["text"] = "Stop"
+            self.after_id = self.after(10, self.move_tiles, time.time())
+            self.time_start = time.time() + (self.HEIGHT - self.HEIGHT_WHITE_KEYS) / self.PX_PER_SEC
+            self.custom_arduino_manager.recording = True
 
         else:
-            self.load_song()
             self.play_stop_button["text"] = "Jouer !"
+            self.time_start = None
+            self.custom_arduino_manager.recording = False
+            # TODO traiter données morceau
+            self.load_song()
 
     def update_play_stop_button_state(self):
+        """
+        Met à jour l'état du bouton play / stop en fonction des états de connexion des cartes du micro, du gant et
+        de la sélection (du moins de l'absence de sélection) du musicien.
+        """
         if self.musician_selected and self.mic_connected and self.glove_connected:
             self.play_stop_button["state"] = tk.NORMAL
         else:
