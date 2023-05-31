@@ -67,7 +67,6 @@ void run_fft() {
 
   ma_trame = FFT.five_max_frequencies(data, N, frequency);
   Serial.write((byte*)&ma_trame, sizeof(ma_trame));
-  Serial.println();
 
   // Serial.print(ma_trame.frequencies[0]);
   // Serial.print(" ");

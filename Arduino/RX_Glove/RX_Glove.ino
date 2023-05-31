@@ -47,7 +47,6 @@ void loop() {
 
     // print the data of the packet
     Serial.write((byte*)&byteArr, sizeof(byteArr));
-    Serial.println();
     // for(int i; i < 15; i++) {
     //   Serial.print(byteArr[i]);
     // }

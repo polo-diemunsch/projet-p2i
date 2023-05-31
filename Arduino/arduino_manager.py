@@ -7,8 +7,9 @@ import serial.tools.list_ports
 
 class ArduinoManager:
 
-    def __init__(self, port, on_input_line_callback=None, baudrate=115200, timeout=.1):
+    def __init__(self, port, input_size, on_input_line_callback=None, baudrate=115200, timeout=1.0):
         self.port = port
+        self.input_size = input_size
         self._serial_connection = None
         self._on_input_line_callback = on_input_line_callback
         self.baudrate = baudrate
@@ -43,11 +44,13 @@ class ArduinoManager:
     def _listening_method(self):
         try:
             while not self.stop:
-                input_line = self._serial_connection.readline()
+                input_line = self._serial_connection.read(size=self.input_size)
+                # print(bin(int.from_bytes(input_line)))
+                # print(bin(int.from_bytes(input_line.strip())))
                 if input_line:
                     if self._on_input_line_callback is not None:
                         try:
-                            self._on_input_line_callback(input_line.strip())
+                            self._on_input_line_callback(input_line)
                         except Exception as ex:
                             print('Exception with on_input_line Callback: ' + str(ex))
 

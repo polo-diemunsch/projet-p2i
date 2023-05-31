@@ -2,8 +2,9 @@ import tkinter as tk
 import colorsys
 from tkinter import ttk
 import SQL.commandes_bd as cbd
-import R.r as r
+# import R.r as r
 import time
+from datetime import datetime
 from Arduino.custom_arduino_manager import CustomArduinoManager
 
 
@@ -51,6 +52,7 @@ class App(tk.Tk):
 
         self.song_title_combo_to_data = {}
         self.musician_name_combo_to_data = {}
+        self.perf_name_combo_to_data = {}
 
         self.tiles = []
 
@@ -68,7 +70,7 @@ class App(tk.Tk):
 
         self.after_id = None
         if self.song_title_combo_to_data.keys():
-            self.load_song()
+            self.song_selected()
 
         self.custom_arduino_manager = CustomArduinoManager(self)
 
@@ -89,7 +91,7 @@ class App(tk.Tk):
 
         self.side_panel.grid_propagate(False)
 
-        for i in range(14):
+        for i in range(16):
             self.side_panel.grid_rowconfigure(i, weight=1)
         for i in range(2):
             self.side_panel.grid_columnconfigure(i, weight=1)
@@ -99,7 +101,7 @@ class App(tk.Tk):
         widget = tk.Label(self.side_panel, text="GET BETTER\nAT PIANO !", font=(self.theme["font"], "24"), bg=self.theme["bg"])
         widget.grid(row=i, column=0, columnspan=2)
 
-        i += 2
+        i += 1
 
         self.connection_mic_state_label = tk.Label(self.side_panel, text="Le micro est déconnecté", font=(self.theme["font"], "11"),
                                                    fg="red", bg=self.theme["bg"])
@@ -107,7 +109,7 @@ class App(tk.Tk):
 
         i += 1
 
-        self.connection_glove_state_label = tk.Label(self.side_panel, text="Le micro est déconnecté", font=(self.theme["font"], "11"),
+        self.connection_glove_state_label = tk.Label(self.side_panel, text="Le gant est déconnecté", font=(self.theme["font"], "11"),
                                                      fg="red", bg=self.theme["bg"])
         self.connection_glove_state_label.grid(row=i, column=0, columnspan=2, sticky="n")
 
@@ -116,12 +118,6 @@ class App(tk.Tk):
         self.connect_arduino_button = tk.Button(self.side_panel, text="Vérifier connection", command=lambda: self.custom_arduino_manager.init_managers(),
                                                 font=(self.theme["font"], "12"), bg=self.theme["button_bg"])
         self.connect_arduino_button.grid(row=i, column=0, columnspan=2, sticky="n")
-
-        i += 1
-
-        widget = tk.Button(self.side_panel, text="Ajouter un musicien", command=self.pop_add_musician_top_level,
-                           font=(self.theme["font"], "12"), bg=self.theme["button_bg"])
-        widget.grid(row=i, column=0, columnspan=2, sticky="s")
 
         i += 1
 
@@ -139,6 +135,12 @@ class App(tk.Tk):
                               width=20, state="readonly", textvariable=self.musician_combo_var)
         self.musician_combo.grid(row=i, column=0, columnspan=2)
         self.musician_combo.bind("<<ComboboxSelected>>", self.load_musician)
+
+        i += 1
+
+        widget = tk.Button(self.side_panel, text="Ajouter un musicien", command=self.pop_add_musician_top_level,
+                           font=(self.theme["font"], "12"), bg=self.theme["button_bg"])
+        widget.grid(row=i, column=0, columnspan=2, sticky="s")
 
         i += 1
 
@@ -165,6 +167,25 @@ class App(tk.Tk):
 
         i += 1
 
+        widget = tk.Label(self.side_panel, text="Replay d'un morceau joué :", font=(self.theme["font"], "14"), bg=self.theme["bg"])
+        widget.grid(row=i, column=0, columnspan=2, sticky="s")
+
+        i += 1
+
+        self.perf_combo_var = tk.StringVar()
+        self.perf_combo = ttk.Combobox(self.side_panel, values=list(self.perf_name_combo_to_data.keys()),
+                                       width=20, state="readonly", textvariable=self.perf_combo_var)
+        self.perf_combo.grid(row=i, column=0, columnspan=2)
+        self.perf_combo.bind("<<ComboboxSelected>>", self.replay_selected)
+
+        i += 1
+
+        self.replay_button = tk.Button(self.side_panel, text="Replay", command=self.launch_replay_stop,
+                                       state=tk.DISABLED, font=(self.theme["font"], "13"), bg=self.theme["button_bg"])
+        self.replay_button.grid(row=i, column=0, columnspan=2, sticky="n")
+
+        i += 1
+
         widget = tk.Label(self.side_panel, text="Morceau :", font=(self.theme["font"], "14"), bg=self.theme["bg"])
         widget.grid(row=i, column=0, columnspan=2, sticky="s")
 
@@ -178,7 +199,7 @@ class App(tk.Tk):
         widget = ttk.Combobox(self.side_panel, values=list(self.song_title_combo_to_data.keys()),
                               width=20, state="readonly", textvariable=self.song_combo_var)
         widget.grid(row=i, column=0, columnspan=2)
-        widget.bind("<<ComboboxSelected>>", self.load_song)
+        widget.bind("<<ComboboxSelected>>", self.song_selected)
         if self.song_title_combo_to_data.keys():
             widget.current(0)
 
@@ -240,16 +261,16 @@ class App(tk.Tk):
         self.custom_arduino_manager.close()
         self.destroy()
 
-    def get_mic_values(self, frequencies_with_amplitudes):
+    def get_mic_values(self, id_notes_with_amplitudes):
         """
         Stocke les données du micro envoyées depuis le manager Arduino en ajoutant le temps depuis le début du morceau.
 
         Paramètres :
-            tuple(int, int) frequencies_with_amplitudes: Fréquences et amplitudes calculées sur l'Arduino du micro
+            tuple(int, int) id_notes_with_amplitudes: index notes et amplitudes calculées sur l'Arduino du micro
         """
-        self.mic_values.append((time.time() - self.time_start, frequencies_with_amplitudes))
+        self.mic_values.append((round(time.time() - self.time_start, 3), id_notes_with_amplitudes))
 
-    def get_glove_values(self, accelero_x, accelero_y, frequence_cardiaque, pression_doigts_individuels):
+    def get_glove_values(self, accelero_x, accelero_y, frequence_cardiaque, pression_doigts):
         """
         Stocke les données du gant envoyées depuis le manager Arduino en ajoutant le temps depuis le début du morceau.
 
@@ -257,10 +278,109 @@ class App(tk.Tk):
             int accelero_x: Valeur en X de l'accéléromètre
             int accelero_y: Valeur en Y de l'accéléromètre
             int frequence_cardiaque: Valeur de fréquence cardiaque
-            list(bool) pression_doigts_individuels: Valeurs d'appui de chaque doigt
+            bytes pression_doigts: Valeurs d'appui de chaque doigt
         """
-        self.glove_values.append((time.time() - self.time_start, pression_doigts_individuels, frequence_cardiaque,
+        self.glove_values.append((round(time.time() - self.time_start, 3), pression_doigts, frequence_cardiaque,
                                   accelero_x, accelero_y))
+
+    def process_data_end_song(self):
+        """
+        Traite les données à la fin d'un morceau.
+        """
+        self.mic_values.reverse()
+        self.glove_values.reverse()
+        print(self.mic_values)
+        print()
+        print(self.glove_values)
+
+        date_perf = datetime.fromtimestamp(self.time_start).strftime("%Y-%m-%d %H:%M:%S")
+        id_perf = cbd.insert_performance(self.connexion_bd, self.musician_name_combo_to_data[self.musician_combo_var.get()][0],
+                                         self.song_title_combo_to_data[self.song_combo_var.get()][0], date_perf)
+
+        mesure_touches = []
+        data = [{}, {}, {}, {}, {}]
+
+        nb_iterations = 0
+        data_mic = self.mic_values.pop()
+
+        while self.glove_values:
+            data_glove = self.glove_values.pop()
+            if self.mic_values and self.mic_values[-1][0] >= data_glove[0]:
+                data_mic = self.mic_values.pop()
+
+            cbd.insert_accelero(self.connexion_bd, id_perf, data_glove[3], data_glove[4], data_glove[0])
+            if nb_iterations % 75 == 0 and nb_iterations != 0:
+                cbd.insert_BPM(self.connexion_bd, id_perf, data_glove[2], data_glove[0])
+
+            to_compare = []
+            nb_finished_to_do = 0
+
+            for i in range(5):
+                if (data_glove[1] >> i) & 1:
+                    if not data[i]:
+                        data[i]["doigt"] = i
+                        data[i]["temps_depuis_debut"] = data_glove[0]
+                        data[i]["notes_possibles"] = []
+
+                    if data_mic[0] >= data[i]["temps_depuis_debut"]:
+                        data[i]["notes_possibles"].append(data_mic[1])
+
+                elif data[i]:
+                    data[i]["temps_presse"] = data_glove[0] - data[i]["temps_depuis_debut"]
+
+                    if not to_compare:
+                        for j in range(5):
+                            if data[j]:
+                                for id_note, avg_amp in self.avg_amplitudes_notes(data[j]["notes_possibles"]):
+                                    to_compare.append((avg_amp, id_note, j))
+                                
+                                if "temps_presse" in data[j]:
+                                    nb_finished_to_do += 1
+            
+            to_compare.sort(reverse=True)
+            id_note_done = set()
+            finger_done = set()
+            
+            processing_done = False
+            i = 0
+            
+            while not processing_done and i < len(to_compare):
+                avg_amp, id_note, i_finger = to_compare[i]
+                if id_note not in id_note_done and i_finger not in finger_done:
+                    id_note_done.add(id_note)
+                    finger_done.add(i_finger)
+                    if "temps_presse" in data[i_finger]:
+                        values = (id_perf, id_note, i_finger, data[i_finger]["temps_presse"], data[i_finger]["temps_depuis_debut"])
+                        mesure_touches.append(values)
+                        cbd.insert_touche_mesure(self.connexion_bd, *values)
+
+                        data[i_finger] = {}
+                        nb_finished_to_do -= 1
+
+                        if nb_finished_to_do == 0:
+                            processing_done = True
+                
+                i += 1
+
+            nb_iterations += 1
+
+        print(mesure_touches)
+
+    @staticmethod
+    def avg_amplitudes_notes(list_id_notes_with_amplitudes):
+        result = {}
+        # nb_id_note = {}
+        for five_id_notes_with_amplitudes in list_id_notes_with_amplitudes:
+            for id_note, amp in five_id_notes_with_amplitudes:
+                result[id_note] = result.get(id_note, 0) + amp
+                # nb_id_note[id_note] = nb_id_note.get(id_note, 0) + 1
+        
+        # for id_note in result:
+        #     result[id_note] /= nb_id_note[id_note]
+
+        list_result = sorted(result.items(), reverse=True, key=lambda x: x[1])
+
+        return list_result[:5]
 
     def update_arduino_connection_state(self, mic_connected, glove_connected):
         """
@@ -406,24 +526,40 @@ class App(tk.Tk):
         self.musician_selected = True
         self.update_play_stop_button_state()
 
-    def load_song(self, event=None):
-        """
-        Charge les touches de références du morceau sélectionné.
+        titres = {}
 
-        Paramètres :
-            event: Événement tkinter
+        for infos in cbd.get_perfs(self.connexion_bd, id_musicien):
+            id_morceau = infos[2]
+            if id_morceau not in titres:
+                titres[id_morceau] = cbd.get_titre_morceau(self.connexion_bd, id_morceau)
+            nom_combo = titres[id_morceau] + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
+            self.perf_name_combo_to_data[nom_combo] = infos
+
+        self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
+        self.perf_combo.current(0)
+        self.replay_selected()
+        self.replay_button["state"] = tk.NORMAL
+
+    def stop_and_remove_keys(self):
+        """
+        Arrête le défilement des tuiles et les efface toutes.
         """
         if self.after_id is not None:
             self.after_cancel(self.after_id)
             self.after_id = None
 
-        id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
-
-        partition = cbd.get_touches_morceau(self.connexion_bd, id_morceau)
         while self.tiles:
             self.canvas.delete(self.tiles.pop())
 
-        for note_index, tps_presse, tps_depuis_debut in partition:
+    def load_keys(self, touches, colors):
+        """
+        Charge les touches données avec les couleurs données sur le canvas.
+
+        Paramètres :
+            list touches: Liste des touches dont il faut placer les tuiles
+            list(str) colors: Liste de taille le nombre de notes possibles contenant la couleur que doit prendre chaque touche
+        """
+        for note_index, tps_presse, tps_depuis_debut in touches:
             if note_index <= len(self.white_notes):
                 x0 = note_index * self.WIDTH_WHITE_KEYS
                 x1 = (note_index + 1) * self.WIDTH_WHITE_KEYS
@@ -433,12 +569,48 @@ class App(tk.Tk):
 
             y0 = - self.PX_PER_SEC * tps_depuis_debut
             y1 = y0 - self.PX_PER_SEC * tps_presse
-            h, l, s = note_index * 360 / len(self.white_notes), 70, 50
-            r, g, b = colorsys.hls_to_rgb(h / 360, l / 100, s / 100)
-            hex_color = '#%02x%02x%02x' % (round(r * 255), round(g * 255), round(b * 255))
 
-            self.tiles.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill=hex_color, width=2))
+            self.tiles.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill=colors[note_index], width=2))
             self.canvas.lower(self.tiles[-1])
+
+    def replay_selected(self, event=None):
+        """
+        Place les tuiles du replay sélectionné et efface les précédentes.
+
+        Paramètres :
+            event: Événement tkinter
+        """
+        self.stop_and_remove_keys()
+
+        id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
+        touches_ref = cbd.get_touches_morceau_ref(self.connexion_bd, id_morceau)
+
+        self.load_keys(touches_ref, ["" for _ in range(len(self.white_notes) + len(self.black_notes))])
+
+        id_perf = self.perf_name_combo_to_data[self.perf_combo_var.get()][0]
+        touches_jouees = cbd.get_touches_perf(self.connexion_bd, id_perf)
+
+        self.load_keys(touches_jouees, ["#00FFFF" for _ in range(len(self.white_notes) + len(self.black_notes))])
+
+    def song_selected(self, event=None):
+        """
+        Place les tuiles du morceau sélectionné et efface les précédentes.
+
+        Paramètres :
+            event: Événement tkinter
+        """
+        self.stop_and_remove_keys()
+
+        id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
+        touches_ref = cbd.get_touches_morceau_ref(self.connexion_bd, id_morceau)
+
+        colors = []
+        for note_index in range(len(self.white_notes) + len(self.black_notes)):
+            h, l, s = note_index / (len(self.white_notes) + len(self.black_notes)), .7, .5
+            r, g, b = colorsys.hls_to_rgb(h, l, s)
+            colors.append('#%02x%02x%02x' % (round(r * 255), round(g * 255), round(b * 255)))
+
+        self.load_keys(touches_ref, colors)
 
     def move_tiles(self, last_frame_time):
         """
@@ -452,13 +624,28 @@ class App(tk.Tk):
         for tile in self.tiles:
             self.canvas.move(tile, 0, dy)
 
-        # TODO check fin musique (peut être attendre de faire le lien avec arduino pour ça)
-        # if self.canvas.coords(tile)[1] >= self.HEIGHT - self.HEIGHT_WHITE_KEYS:
-        #     pass
+        if self.canvas.coords(self.tiles[0])[1] >= self.HEIGHT - self.HEIGHT_WHITE_KEYS + 1.0 * self.PX_PER_SEC:
+            if self.time_start is not None:
+                self.play_stop(end_of_song=True)
+            else:
+                self.launch_replay_stop()
+        else:
+            self.after_id = self.after(10, self.move_tiles, time.time())
 
-        self.after_id = self.after(10, self.move_tiles, time.time())
+    def launch_replay_stop(self):
+        """
+        Change le texte du bouton replay/stop et appelle la fonction correspondante en fonction de son texte actuel.
+        """
+        if self.replay_button["text"] == "Replay":
+            self.replay_button["text"] = "Stop"
+            self.after_id = self.after(10, self.move_tiles, time.time())
 
-    def play_stop(self):
+        else:
+            self.replay_button["text"] = "Relay"
+
+            self.stop_and_remove_keys()
+
+    def play_stop(self, end_of_song=False):
         """
         Change le texte du bouton jouer/stop et appelle la fonction correspondante en fonction de son texte actuel.
         """
@@ -470,10 +657,13 @@ class App(tk.Tk):
 
         else:
             self.play_stop_button["text"] = "Jouer !"
-            self.time_start = None
             self.custom_arduino_manager.recording = False
-            # TODO traiter données morceau
-            self.load_song()
+            if end_of_song:
+                self.process_data_end_song()
+
+            self.time_start = None
+
+            self.stop_and_remove_keys()
 
     def update_play_stop_button_state(self):
         """
@@ -485,24 +675,25 @@ class App(tk.Tk):
         else:
             self.play_stop_button["state"] = tk.DISABLED
 
-    def nb_fausses_notes(self, notes_refs, notes_jouees):
+    @staticmethod
+    def nb_fausses_notes(touches_ref, touches_jouees):
         """
         Cette fontion calcule le nombre de fausses notes jouées dans le morceau.
 
-        Paramètres:
-        notes_refs : les informations de référence du morceau
-        notes_jouees : les informations des notes jouées par le musicien.
+        Paramètres :
+            list touches_ref : les informations de référence du morceau
+            lits touches_jouees : les informations des notes jouées par le musicien.
 
-        Renvoie:
-        nb_fausses_notes : le nombre de fausses notes
-
+        Renvoi :
+            int : le nombre de fausses notes
         """
-        self.tolerance_tps = 0.150
-        self.nb_bonnes_notes = 0
+        tolerance_temps = 0.150
+        nb_bonnes_notes = 0
 
-        for note_r, tps_r in notes_refs:
-            for note_j, tps_j in notes_jouees:
-                if note_j == note_r and abs(tps_r - tps_j) < tolerance_tps:
-                    self. nb_bonnes_notes += 1
+        for note_ref, temps_presse_ref, temps_depuis_debut_ref in touches_ref:
+            for note_jouee, temps_presse_jouee, temps_depuis_debut_jouee in touches_jouees:
+                if note_ref == note_jouee and abs(temps_depuis_debut_ref - temps_depuis_debut_jouee) < tolerance_temps \
+                        and abs(temps_depuis_debut_ref + temps_presse_ref - (temps_depuis_debut_jouee + temps_presse_jouee)) < tolerance_temps:
+                    nb_bonnes_notes += 1
 
-        self.nb_fausses_notes = len(notes_refs) - nb_bonnes_notes
+        return len(touches_ref) - nb_bonnes_notes

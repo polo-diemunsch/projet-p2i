@@ -157,6 +157,7 @@ def insert_musicien(connexion_bd, nom, niveau):
     Paramètres :
         str nom: Nom du musicien
         str niveau: Niveau estimé du musicien
+
     Renvoi :
         int: id du morceau ajouté
     """
@@ -175,7 +176,7 @@ def insert_performance(connexion_bd, id_musicien, id_morceau, date_perf):
     Paramètres :
         int id_musicien: Identifiant du musicien jouant cette performance
         int id_morceau: Identifiant du morceau joué
-        str date_perf: Date (et heure) du début de la performance              # A adapter
+        str date_perf: Date (et heure) du début de la performance
     """
     cursor = connexion_bd.cursor()
     cursor.execute("INSERT INTO Performance (idMusicien, idMorceau, datePerf) VALUES (%s, %s, %s);",
@@ -220,7 +221,7 @@ def get_morceaux(connexion_bd):
     """
     Récupère les id et titres des morceaux présents dans la base de données.
 
-    Renvoie :
+    Renvoi :
         list : Liste de tuples composés de l'id et du titre pour chaque morceau
     """
     cursor = connexion_bd.cursor()
@@ -228,11 +229,23 @@ def get_morceaux(connexion_bd):
     return cursor.fetchall()
 
 
-def get_touches_morceau(connexion_bd, id_morceau):
+def get_titre_morceau(connexion_bd, id_morceau):
+    """
+    Récupère le titre du morceaux d'identifiant id_morceau.
+
+    Renvoi :
+        list : Liste de tuples composés de l'id et du titre pour chaque morceau
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT titre FROM Morceau WHERE idMorceau = %s", [id_morceau])
+    return cursor.fetchone()[0]
+
+
+def get_touches_morceau_ref(connexion_bd, id_morceau):
     """
     Récupère les touches de références ainsi que le temps d'appui et le moment où appuyer pour le morceau d'identifiant id_morceau.
 
-    Renvoie :
+    Renvoi :
         Liste de tuples composés de la note, du temps d'appui et du moment où appuyer pour chaque touche
         La liste est triée par moment où appuyer
     """
@@ -241,38 +254,41 @@ def get_touches_morceau(connexion_bd, id_morceau):
     return cursor.fetchall()
 
 
+def get_touches_perf(connexion_bd, id_perf):
+    """
+    Récupère les touches jouées ainsi que le temps d'appui et le moment où appuyer pour la performance d'identifiant id_morceau.
+
+    Renvoi :
+        Liste de tuples composés de la note, du temps d'appui et du moment où appuyer pour chaque touche
+        La liste est triée par moment où appuyer
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT note, tpsPresse, tpsDepuisDebut FROM MesureTouche WHERE idPerf=%s ORDER BY tpsDepuisDebut DESC", [id_perf])
+    return cursor.fetchall()
+
+
 def get_musiciens(connexion_bd):
     """
     Récupère les id, noms et niveaux estimés des musiciens présents dans la base de données.
 
-    Renvoie :
+    Renvoi :
         Liste de tuples composés du titre et de l'id, nom et niveau estimé pour chaque musicien
     """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT idMusicien, nom, niveau FROM Musicien")
     return cursor.fetchall()
 
-def get_perf(connexion_bd, id_musicien, id_morceau):
-    """
-    Récupère séparément les informations de la dernière performance d'un musicien sur un morceau et les informations sur toutes les performances précédentes.
 
-    Récupère :
-    Le nom du musicien, du morceau, la date de la performance, le nb de fausses notes, 
-    le nb de notes totales (pour calculer la ratio de précision), le BPM estimé
-    le niveau actuel du musicien, le niveau estimé du musicien
+def get_perfs(connexion_bd, id_musicien):
+    """
+    Récupère les informations de toutes les performances d'un musicien.
+
     Renvoi :
-    Un tuple contenant le nom du musicien, du morceau, la date de la performance,
-    le nb de fausses notes, le ratio de précision, le BPM estimé
-    le niveau actuel du musicien, le niveau estimé du musicien
+        Une liste de tuples, ces derniers contenants les informations de chaque performance pour ce musicien
     """
     cursor = connexion_bd.cursor()
-    cursor.execute('SELECT mo.nom, mu.titre , p.datePerf, p.nbFaussesNotes, (p.nbNotesTotal-p.nbFaussesNotes)/p.nbNotesTotal, p.bpmMoy, mu.niveau, p.niveauEstime'
-                   +"FROM Musicien mu, Morceau mo, Performance p"
-                   +"WHERE p.idMusicien = %s AND p.idMorceau = %s AND mu.idMusicien = p.idMusicien AND mo.idMorceau = p.idMorceau"
-                   +"ORDER BY p.datePerf ASC", [id_musicien, id_morceau])
-    last_perf = cursor.pop()
-    return last_perf, cursor.fetchall()
-
+    cursor.execute("SELECT * FROM Performance WHERE idMusicien = %s ORDER BY datePerf ASC", [id_musicien])
+    return cursor.fetchall()
 
 
 def get_BPM(connexion_bd, id_perf):
@@ -282,7 +298,7 @@ def get_BPM(connexion_bd, id_perf):
     Paramètres :
         int id_perf: Identifiant de la performance
 
-    Renvoie :
+    Renvoi :
         Liste contenant les valeurs de BPM pour une performance en fonction du temps
     """
     cursor = connexion_bd.cursor()
@@ -297,7 +313,7 @@ def get_accelero(connexion_bd, id_perf):
     Paramètres :
         int id_perf: Identifiant de la performance
 
-    Renvoie :
+    Renvoi :
         Liste contentant les valeurs d'accéléro pour une performance en fonction depuis le début
     """
     cursor = connexion_bd.cursor()
@@ -305,6 +321,8 @@ def get_accelero(connexion_bd, id_perf):
                    [id_perf])
     return cursor.fetchall()
 
+
+# On a vraiment besoin des 2 fonctions suivantes ?
 def get_notes(connexion_bd, id_perf):
     """
     Extrait les informations des notes jouées lors d'une performance ainsi que celles des notes de référence pour le morceau joué.
@@ -312,21 +330,22 @@ def get_notes(connexion_bd, id_perf):
     Paramètres :
         int id_perf: Identifiant de la performance
 
-    Renvoie :
-        list notes_refs : Liste contenant les informations des notes de référence
-        list notes_jouees : Liste contentant les informations des notes jouees
+    Renvoi :
+        list touches_ref : Liste contenant les informations des notes de référence
+        list touches_jouees : Liste contentant les informations des notes jouees
     """
     cursor = connexion_bd.cursor()
     cursor.execute(
         "SELECT t.note, t.tpsDepuisDebut FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau ORDER BY tpsDepuisDebut DESC;",
         [id_perf])
-    notes_refs = cursor.fetchall()
+    touches_ref = cursor.fetchall()
     cursor.execute(
         "SELECT note, tpsDepuisDebut FROM MesureTouche WHERE idPerf = %s ORDER BY tpsDepuisDebut DESC;",
         [id_perf])
-    notes_jouees = cursor.fetchall()
+    touches_jouees = cursor.fetchall()
 
-    return notes_refs, notes_jouees
+    return touches_ref, touches_jouees
+
 
 def get_nb_notes(connexion_bd, id_perf):
     """
@@ -340,6 +359,7 @@ def get_nb_notes(connexion_bd, id_perf):
         "SELECT COUNT(t.note) FROM ToucheRef t, Performance p WHERE p.idPerf = %s AND p.idMorceau = t.idMorceau;",
         [id_perf])
     return cursor.fetchone()[0]
+
 
 def get_bpm_moyen(connexion_bd, id_perf):
     """

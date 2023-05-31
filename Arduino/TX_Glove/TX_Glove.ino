@@ -157,7 +157,7 @@ void loop() {
   ma_trame.frequence_cardiaque = BPM;
   ma_trame.pression_doigts = val_flexi;
 
-  int state = radio.transmit((byte*)&ma_trame,  sizeof(ma_trame));
+  int state = radio.transmit((byte*)&ma_trame, sizeof(ma_trame));
 
   // if (state == RADIOLIB_ERR_NONE) {
   //   // the packet was successfully transmitted

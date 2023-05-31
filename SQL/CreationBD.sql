@@ -61,7 +61,7 @@ CREATE TABLE MesureAccelero (
   idPerf INT(10) NOT NULL,
   valeurX INT(6) NOT NULL,
   valeurY INT(6) NOT NULL,
-  tpsDepuisDebut TIME NOT NULL,
+  tpsDepuisDebut DECIMAL(5, 3) NOT NULL,
   PRIMARY KEY (idMesureAccelero),
   FOREIGN KEY (idPerf) REFERENCES Performance(idPerf)
 );
@@ -70,7 +70,7 @@ CREATE TABLE MesureBPM (
   idMesureBPM INT(10) AUTO_INCREMENT,
   idPerf INT(10) NOT NULL,
   valeur INT(3) NOT NULL,
-  tpsDepuisDebut TIME NOT NULL,
+  tpsDepuisDebut DECIMAL(5, 3) NOT NULL,
   PRIMARY KEY (idMesureBPM),
   FOREIGN KEY (idPerf) REFERENCES Performance(idPerf)
 );
