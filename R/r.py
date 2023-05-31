@@ -8,3 +8,7 @@ rpy2.ipython.html.init_printing()
 ## To see plots in an output cell
 from rpy2.ipython.ggplot import image_png
 
+from rpy2.robjects.packages import importr, data
+
+utils = importr('utils')
+base = importr('base')

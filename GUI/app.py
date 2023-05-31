@@ -2,6 +2,7 @@ import tkinter as tk
 import colorsys
 from tkinter import ttk
 import SQL.commandes_bd as cbd
+import R.r as r
 import time
 from Arduino.custom_arduino_manager import CustomArduinoManager
 
