@@ -483,3 +483,25 @@ class App(tk.Tk):
             self.play_stop_button["state"] = tk.NORMAL
         else:
             self.play_stop_button["state"] = tk.DISABLED
+
+    def nb_fausses_notes(self, notes_refs, notes_jouees):
+        """
+        Cette fontion calcule le nombre de fausses notes jouées dans le morceau.
+
+        Paramètres:
+        notes_refs : les informations de référence du morceau
+        notes_jouees : les informations des notes jouées par le musicien.
+
+        Renvoie:
+        nb_fausses_notes : le nombre de fausses notes
+
+        """
+        self.tolerance_tps = 0.150
+        self.nb_bonnes_notes = 0
+
+        for note_r, tps_r in notes_refs:
+            for note_j, tps_j in notes_jouees:
+                if note_j == note_r and abs(tps_r - tps_j) < tolerance_tps:
+                    self. nb_bonnes_notes += 1
+
+        self.nb_fausses_notes = len(notes_refs) - nb_bonnes_notes
