@@ -369,10 +369,12 @@ class App(tk.Tk):
         self.perf_name_combo_to_data[nom_combo] = infos
 
         self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
-        if list(self.perf_name_combo_to_data.keys()):
-            self.perf_combo.current(len(self.musician_name_combo_to_data) - 1)
+        if self.perf_name_combo_to_data.keys():
+            self.perf_combo.current(len(self.perf_name_combo_to_data) - 1)
             self.replay_selected()
             self.replay_button["state"] = tk.NORMAL
+        else:
+            self.replay_button["state"] = tk.DISABLED
 
     @staticmethod
     def avg_amplitudes_notes(list_id_notes_with_amplitudes):
@@ -533,6 +535,7 @@ class App(tk.Tk):
         self.update_play_stop_button_state()
 
         titres = {}
+        self.perf_name_combo_to_data = {}
 
         for infos in cbd.get_perfs(self.connexion_bd, id_musicien):
             id_morceau = infos[2]
@@ -542,10 +545,12 @@ class App(tk.Tk):
             self.perf_name_combo_to_data[nom_combo] = infos[:4]
 
         self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
-        if list(self.perf_name_combo_to_data.keys()):
+        if self.perf_name_combo_to_data.keys():
             self.perf_combo.current(0)
             self.replay_selected()
             self.replay_button["state"] = tk.NORMAL
+        else:
+            self.replay_button["state"] = tk.DISABLED
 
     def stop_and_remove_keys(self):
         """
