@@ -291,6 +291,26 @@ def get_perfs(connexion_bd, id_musicien):
     return cursor.fetchall()
 
 
+def get_perf(connexion_bd, id_musicien, id_morceau):
+    """
+    Récupère séparément les informations de la dernière performance d'un musicien sur un morceau et les informations sur toutes les performances précédentes.
+    Récupère :
+    Le nom du musicien, du morceau, la date de la performance, le nb de fausses notes,
+    le nb de notes totales (pour calculer la ratio de précision), le BPM estimé
+    le niveau actuel du musicien, le niveau estimé du musicien
+    Renvoi :
+    Un tuple contenant le nom du musicien, du morceau, la date de la performance,
+    le nb de fausses notes, le ratio de précision, le BPM estimé
+    le niveau actuel du musicien, le niveau estimé du musicien
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT mo.nom as Nom du Musicien, mu.titre as Titre du Morceau, p.datePerf as Date de la Performance, p.nbFaussesNotes as Nb Fausses Notes, (p.nbNotesTotal-p.nbFaussesNotes)/p.nbNotesTotal as Ratio de Précision, p.bpmMoy as BPM Moyen, mu.niveau as Ancien Niveau, p.niveauEstime as Niveau Estimé"
+                   +"FROM Musicien mu, Morceau mo, Performance p"
+                   +"WHERE p.idMusicien = %s AND p.idMorceau = %s AND mu.idMusicien = p.idMusicien AND mo.idMorceau = p.idMorceau"
+                   +"ORDER BY p.datePerf ASC", [id_musicien, id_morceau])
+    last_perf = cursor.pop()
+    return last_perf, cursor.fetchall()
+
 def get_BPM(connexion_bd, id_perf):
     """
     Récupère le BPM et le temps depuis le début

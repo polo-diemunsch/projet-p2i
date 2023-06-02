@@ -641,7 +641,7 @@ class App(tk.Tk):
             self.after_id = self.after(10, self.move_tiles, time.time())
 
         else:
-            self.replay_button["text"] = "Relay"
+            self.replay_button["text"] = "Replay"
 
             self.stop_and_remove_keys()
 

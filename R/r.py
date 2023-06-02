@@ -1,14 +1,21 @@
-import rpy2
-import rpy2.robjects as robjects
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 
-## To aid in printing HTML in notebooks
-import rpy2.ipython.html
-rpy2.ipython.html.init_printing()
+# Créer une fenêtre Tkinter
+fenetre = tk.Tk()
+fenetre.title("Graphique Matplotlib dans Tkinter")
 
-## To see plots in an output cell
-from rpy2.ipython.ggplot import image_png
+# Créer une figure et des axes
+fig, ax = plt.subplots()
+ax.plot([1, 2, 3, 4], [1, 4, 2, 3])
 
-from rpy2.robjects.packages import importr, data
+# Créer un widget Canvas Tkinter pour le graphique
+canvas = FigureCanvasTkAgg(fig, master=fenetre)
+canvas.draw()
 
-utils = importr('utils')
-base = importr('base')
+# Afficher le widget Canvas
+canvas.get_tk_widget().pack()
+
+# Lancer la boucle principale Tkinter
+fenetre.mainloop()
