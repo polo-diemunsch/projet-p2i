@@ -424,8 +424,6 @@ class App(tk.Tk):
         Créé la fenêtre toplevel pour rentrer un nouveau musicien.
         """
         if self.top_level_add_musician is None:
-            # self.top_level_add_musician = tk.Toplevel(bg=self.theme["bg"])
-
             self.top_level_add_musician = tk.Toplevel(bg=self.theme["bg"])
 
             width = 500
@@ -542,8 +540,6 @@ class App(tk.Tk):
                 titres[id_morceau] = cbd.get_titre_morceau(self.connexion_bd, id_morceau)
             nom_combo = titres[id_morceau] + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
             self.perf_name_combo_to_data[nom_combo] = infos[:4]
-
-        print(self.perf_name_combo_to_data)
 
         self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
         if list(self.perf_name_combo_to_data.keys()):
