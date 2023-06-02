@@ -69,8 +69,6 @@ class App(tk.Tk):
         self.create_widgets()
 
         self.after_id = None
-        if self.song_title_combo_to_data.keys():
-            self.song_selected()
 
         self.custom_arduino_manager = CustomArduinoManager(self)
 
@@ -174,9 +172,8 @@ class App(tk.Tk):
 
         self.perf_combo_var = tk.StringVar()
         self.perf_combo = ttk.Combobox(self.side_panel, values=list(self.perf_name_combo_to_data.keys()),
-                                       width=20, state="readonly", textvariable=self.perf_combo_var)
+                                       width=30, state="readonly", textvariable=self.perf_combo_var)
         self.perf_combo.grid(row=i, column=0, columnspan=2)
-        self.perf_combo.bind("<<ComboboxSelected>>", self.replay_selected)
 
         i += 1
 
@@ -199,7 +196,6 @@ class App(tk.Tk):
         widget = ttk.Combobox(self.side_panel, values=list(self.song_title_combo_to_data.keys()),
                               width=20, state="readonly", textvariable=self.song_combo_var)
         widget.grid(row=i, column=0, columnspan=2)
-        widget.bind("<<ComboboxSelected>>", self.song_selected)
         if self.song_title_combo_to_data.keys():
             widget.current(0)
 
@@ -293,9 +289,12 @@ class App(tk.Tk):
         print()
         print(self.glove_values)
 
-        date_perf = datetime.fromtimestamp(self.time_start).strftime("%Y-%m-%d %H:%M:%S")
-        id_perf = cbd.insert_performance(self.connexion_bd, self.musician_name_combo_to_data[self.musician_combo_var.get()][0],
-                                         self.song_title_combo_to_data[self.song_combo_var.get()][0], date_perf)
+        date_perf = datetime.fromtimestamp(self.time_start)
+        infos = (self.musician_name_combo_to_data[self.musician_combo_var.get()][0],
+                 self.song_title_combo_to_data[self.song_combo_var.get()][0], date_perf)
+        id_perf = cbd.insert_performance(self.connexion_bd, *infos)
+
+        infos = (id_perf, *infos)
 
         mesure_touches = []
         data = [{}, {}, {}, {}, {}]
@@ -366,6 +365,17 @@ class App(tk.Tk):
 
         print(mesure_touches)
 
+        nom_combo = cbd.get_titre_morceau(self.connexion_bd, infos[2]) + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
+        self.perf_name_combo_to_data[nom_combo] = infos
+
+        self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
+        if self.perf_name_combo_to_data.keys():
+            self.perf_combo.current(len(self.perf_name_combo_to_data) - 1)
+            self.replay_selected()
+            self.replay_button["state"] = tk.NORMAL
+        else:
+            self.replay_button["state"] = tk.DISABLED
+
     @staticmethod
     def avg_amplitudes_notes(list_id_notes_with_amplitudes):
         result = {}
@@ -416,8 +426,6 @@ class App(tk.Tk):
         Créé la fenêtre toplevel pour rentrer un nouveau musicien.
         """
         if self.top_level_add_musician is None:
-            # self.top_level_add_musician = tk.Toplevel(bg=self.theme["bg"])
-
             self.top_level_add_musician = tk.Toplevel(bg=self.theme["bg"])
 
             width = 500
@@ -527,18 +535,22 @@ class App(tk.Tk):
         self.update_play_stop_button_state()
 
         titres = {}
+        self.perf_name_combo_to_data = {}
 
         for infos in cbd.get_perfs(self.connexion_bd, id_musicien):
             id_morceau = infos[2]
             if id_morceau not in titres:
                 titres[id_morceau] = cbd.get_titre_morceau(self.connexion_bd, id_morceau)
             nom_combo = titres[id_morceau] + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
-            self.perf_name_combo_to_data[nom_combo] = infos
+            self.perf_name_combo_to_data[nom_combo] = infos[:4]
 
         self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
-        self.perf_combo.current(0)
-        self.replay_selected()
-        self.replay_button["state"] = tk.NORMAL
+        if self.perf_name_combo_to_data.keys():
+            self.perf_combo.current(0)
+            self.replay_selected()
+            self.replay_button["state"] = tk.NORMAL
+        else:
+            self.replay_button["state"] = tk.DISABLED
 
     def stop_and_remove_keys(self):
         """
@@ -637,6 +649,7 @@ class App(tk.Tk):
         Change le texte du bouton replay/stop et appelle la fonction correspondante en fonction de son texte actuel.
         """
         if self.replay_button["text"] == "Replay":
+            self.replay_selected()
             self.replay_button["text"] = "Stop"
             self.after_id = self.after(10, self.move_tiles, time.time())
 
@@ -650,6 +663,7 @@ class App(tk.Tk):
         Change le texte du bouton jouer/stop et appelle la fonction correspondante en fonction de son texte actuel.
         """
         if self.play_stop_button["text"] == "Jouer !":
+            self.song_selected()
             self.play_stop_button["text"] = "Stop"
             self.after_id = self.after(10, self.move_tiles, time.time())
             self.time_start = time.time() + (self.HEIGHT - self.HEIGHT_WHITE_KEYS) / self.PX_PER_SEC
