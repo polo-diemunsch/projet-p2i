@@ -4,7 +4,6 @@ uint8_t pin_flexi3 = A3;
 uint8_t pin_flexi4 = A4;
 uint8_t pin_flexi5 = A5;
 
-float v_ref = 0.480;
 uint16_t seuil = 500;
 
 uint16_t value;
