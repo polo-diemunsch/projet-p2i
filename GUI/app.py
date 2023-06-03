@@ -293,8 +293,10 @@ class App(tk.Tk):
         infos = (self.musician_name_combo_to_data[self.musician_combo_var.get()][0],
                  self.song_title_combo_to_data[self.song_combo_var.get()][0], date_perf)
         id_perf = cbd.insert_performance(self.connexion_bd, *infos)
-
         infos = (id_perf, *infos)
+
+        with open(f"{id_perf}_{date_perf}.py", "w") as file:
+            file.write(f"mic_values = {str(self.mic_values)}\n\nglove_values = {str(self.glove_values)}\n")
 
         mesure_touches = []
         data = [{}, {}, {}, {}, {}]
