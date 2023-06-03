@@ -67,11 +67,15 @@ void loop() {
     int16_t tempY;
 
     //Acelerometer axis X
-    myIMU.readRegisterInt16(&tempX, LSM6DS3_ACC_GYRO_OUTX_L_XL)
+    myIMU.readRegisterInt16(&tempX, LSM6DS3_ACC_GYRO_OUTX_L_XL);
 
 
     //Acelerometer axis Y
-    myIMU.readRegisterInt16(&tempY, LSM6DS3_ACC_GYRO_OUTY_L_XL)
+    myIMU.readRegisterInt16(&tempY, LSM6DS3_ACC_GYRO_OUTY_L_XL);
+
+    Serial.print(tempX);
+    Serial.print(",");
+    Serial.println(tempY);
 
 
 

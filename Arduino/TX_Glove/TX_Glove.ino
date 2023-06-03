@@ -20,7 +20,7 @@ uint8_t pin_flexi4 = A4;
 uint8_t pin_flexi5 = A5;
 
 float v_ref = 0.480;
-uint16_t seuil = 500; // Voir pour modifier le Threshold
+uint16_t seuil = 175; // Voir pour modifier le Threshold
 
 uint16_t value1;
 uint16_t value2;

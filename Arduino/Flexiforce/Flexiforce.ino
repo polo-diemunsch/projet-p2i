@@ -7,8 +7,13 @@ uint8_t pin_flexi5 = A5;
 float v_ref = 0.480;
 uint16_t seuil = 500;
 
-uint16_t value;
-byte val_flexi
+uint16_t value1;
+uint16_t value2;
+uint16_t value3;
+uint16_t value4;
+uint16_t value5;
+
+byte val_flexi;
 
 
 void setup() {
@@ -16,7 +21,7 @@ void setup() {
 }
 
 void loop() {
-  val_flexi = 0
+  val_flexi = 0;
   value1 = analogRead(pin_flexi1);
   value2 = analogRead(pin_flexi2);
   value3 = analogRead(pin_flexi3);
