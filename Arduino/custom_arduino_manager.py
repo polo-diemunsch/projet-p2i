@@ -60,23 +60,23 @@ class CustomArduinoManager:
             bytes input_line: données brutes reçues de l'Arduino du micro
         """
         if self.recording:
-            id_notes_with_amplitudes = []
+            id_notes_with_amplitudes = {}
 
             half_length = len(input_line)//2
 
             for i in range(0, half_length, 2):
                 freq = int.from_bytes(input_line[i:i + 2], "little")
                 amp = int.from_bytes(input_line[half_length + i:half_length + i + 2], "little")
+                id_note = id_note_from_frequency(freq)
 
-                id_notes_with_amplitudes.append((id_note_from_frequency(freq), amp))
+                id_notes_with_amplitudes[id_note] = max(id_notes_with_amplitudes.get(id_note, 0), amp)
 
             # print(id_notes_with_amplitudes)
             # print(time.time() - self.t1)
             # self.t1 = time.time()
             # print()
 
-            if len(id_notes_with_amplitudes) < 5:
-                print(id_notes_with_amplitudes)
+            print(id_notes_with_amplitudes)
 
             self.app.get_mic_values(id_notes_with_amplitudes)
 
@@ -101,7 +101,7 @@ class CustomArduinoManager:
             # print(f"accelro_x décodée: {accelero_x}")
             # print(f"accelero_y décodée: {accelero_y}")
             # print(f"frequence_cardiaque décodée: {frequence_cardiaque}")
-            # print(f"pression_doigts décodée: {pression_doigts}")
+            print(f"pression_doigts décodée: {pression_doigts}")
             # # print(f"pression_doigts_individuels: {pression_doigts_individuels}")
             # print(time.time() - self.t2)
             # self.t2 = time.time()

@@ -262,8 +262,20 @@ class App(tk.Tk):
         Stocke les données du micro envoyées depuis le manager Arduino en ajoutant le temps depuis le début du morceau.
 
         Paramètres :
-            tuple(int, int) id_notes_with_amplitudes: index notes et amplitudes calculées sur l'Arduino du micro
+            dict id_notes_with_amplitudes: index notes et amplitudes calculées sur l'Arduino du micro
         """
+        for i in range(len(self.white_keys)):
+            if i in id_notes_with_amplitudes and id_notes_with_amplitudes[i] > 10 + i*7:
+                self.canvas.itemconfig(self.white_keys[i], fill=self.theme["button_bg"])
+            else:
+                self.canvas.itemconfig(self.white_keys[i], fill="white")
+
+        for i in range(len(self.black_keys)):
+            if i + len(self.white_keys) in id_notes_with_amplitudes and id_notes_with_amplitudes[i + len(self.white_keys)] > 10 + i*7:
+                self.canvas.itemconfig(self.black_keys[i], fill=self.theme["bg"])
+            else:
+                self.canvas.itemconfig(self.black_keys[i], fill="black")
+
         self.mic_values.append((round(time.time() - self.time_start, 3), id_notes_with_amplitudes))
 
     def get_glove_values(self, accelero_x, accelero_y, frequence_cardiaque, pression_doigts):
@@ -285,8 +297,8 @@ class App(tk.Tk):
         """
         self.mic_values.reverse()
         self.glove_values.reverse()
-        print(self.mic_values)
         print()
+        print(self.mic_values)
         print(self.glove_values)
 
         date_perf = datetime.fromtimestamp(self.time_start)
@@ -373,7 +385,6 @@ class App(tk.Tk):
         self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
         if self.perf_name_combo_to_data.keys():
             self.perf_combo.current(len(self.perf_name_combo_to_data) - 1)
-            self.replay_selected()
             self.replay_button["state"] = tk.NORMAL
         else:
             self.replay_button["state"] = tk.DISABLED
@@ -383,7 +394,7 @@ class App(tk.Tk):
         result = {}
         # nb_id_note = {}
         for five_id_notes_with_amplitudes in list_id_notes_with_amplitudes:
-            for id_note, amp in five_id_notes_with_amplitudes:
+            for id_note, amp in five_id_notes_with_amplitudes.items():
                 result[id_note] = result.get(id_note, 0) + amp
                 # nb_id_note[id_note] = nb_id_note.get(id_note, 0) + 1
         
@@ -549,7 +560,6 @@ class App(tk.Tk):
         self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
         if self.perf_name_combo_to_data.keys():
             self.perf_combo.current(0)
-            self.replay_selected()
             self.replay_button["state"] = tk.NORMAL
         else:
             self.replay_button["state"] = tk.DISABLED
@@ -596,7 +606,7 @@ class App(tk.Tk):
         """
         self.stop_and_remove_keys()
 
-        id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
+        id_morceau = self.perf_name_combo_to_data[self.perf_combo_var.get()][2]
         touches_ref = cbd.get_touches_morceau_ref(self.connexion_bd, id_morceau)
 
         self.load_keys(touches_ref, ["" for _ in range(len(self.white_notes) + len(self.black_notes))])

@@ -12,7 +12,7 @@ def id_note_from_frequency(frequency):
     """
     Donne l'identifiant de la note en fonction de la fréquence
     """
-    ecart_min, id_note = float("inf"), -1
+    ecart_min, id_note = frequency, -1
     for i in range(len(freq)):
         ecart = abs(freq[i] - frequency)
 
