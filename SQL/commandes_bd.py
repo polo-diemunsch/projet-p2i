@@ -1,5 +1,6 @@
 import mysql.connector as mysql
 from creds import creds_bd
+import csv
 
 
 def ouvrir_connexion_bd():
@@ -393,3 +394,40 @@ def get_bpm_moyen(connexion_bd, id_perf):
                    [id_perf])
     return cursor.fetchone()[0]
 
+def create_CSV_train_data(connexion_bd):
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT BPM.valeur, BPM.tpsDepuisDebut, Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
+                   "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal, Perf.bpmMoy, Mu.niveau "
+                   "FROM MesureBPM BPM, MesureAccelero  Acc, MesureTouche MT, Performance Perf, Musicien Mu "
+                   "WHERE Perf.idPerf = BPM.idPerf AND Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf AND Mu.idMusicien = Perf.idMusicien;")
+
+    with open("train_data.csv", 'w', encoding='utf-8', newline="") as fichier:
+        writer = csv.writer(fichier, delimiter=';', quotechar='"')
+        for ligne in cursor:
+            print(ligne)
+            writer.writerow(ligne)
+
+def create_CSV_test_data(connexion_bd):
+    cursor = connexion_bd.cursor()
+    cursor.execute("SELECT BPM.valeur, BPM.tpsDepuisDebut, Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
+                   "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal, Perf.bpmMoy "
+                   "FROM MesureBPM BPM, MesureAccelero  Acc, MesureTouche MT, Performance Perf "
+                   "WHERE Perf.idPerf = BPM.idPerf AND Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf;")
+
+    with open("test_data.csv", 'w', encoding='utf-8', newline="") as fichier:
+        writer = csv.writer(fichier, delimiter=';', quotechar='"')
+        for ligne in cursor:
+            writer.writerow(ligne)
+
+def lire_fichier_csv(chemin_vers_fichier):
+    print(f"\nLecture du fichier CSV: {chemin_vers_fichier}")
+    nb_lignes = 0
+    somme = 0.0
+    with open(chemin_vers_fichier, 'r', encoding='utf-8') as fichier:
+        reader = csv.reader(fichier, delimiter=';', quotechar='"')
+        for ligne in reader:
+            nb_lignes += 1
+            numero = ligne[0]
+            mesure = ligne[1]
+            somme += float(mesure)
+            print(f"Le capteur n°{numero} a mesuré {mesure}")
