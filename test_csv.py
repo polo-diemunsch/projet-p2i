@@ -126,7 +126,7 @@ print("*" * 40 + "\n")
 print("Création du modèle...")
 # create model
 knn = KNeighborsClassifier(n_neighbors=8)
-# fit to train data (train the model)
+# fit to train Data (train the model)
 knn.fit(X_train_scaled, y_train)
 
 # Entrainement

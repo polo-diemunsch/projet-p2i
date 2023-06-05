@@ -49,10 +49,10 @@ class ArduinoManager:
                 # print(bin(int.from_bytes(input_line.strip())))
                 if input_line:
                     if self._on_input_line_callback is not None:
-                        try:
+                        # try:
                             self._on_input_line_callback(input_line)
-                        except Exception as ex:
-                            print('Exception with on_input_line Callback: ' + str(ex))
+                        # except Exception as ex:
+                            # print('Exception with on_input_line Callback: ' + str(ex))
 
         except serial.SerialException as e:
             print('ARDUINO [ERROR] on listening')

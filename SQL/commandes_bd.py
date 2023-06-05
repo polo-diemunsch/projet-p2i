@@ -312,6 +312,7 @@ def get_perf(connexion_bd, id_musicien, id_morceau):
     last_perf = cursor.pop()
     return last_perf, cursor.fetchall()
 
+
 def get_BPM(connexion_bd, id_perf):
     """
     Récupère le BPM et le temps depuis le début
@@ -326,6 +327,7 @@ def get_BPM(connexion_bd, id_perf):
     cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM WHERE idPerf=%s",
                    [id_perf])
     return cursor.fetchall()
+
 
 def get_accelero(connexion_bd, id_perf):
     """
@@ -393,6 +395,7 @@ def get_bpm_moyen(connexion_bd, id_perf):
     cursor.execute("SELECT AVG(valeur) FROM MesureBPM WHERE idPerf = %s",
                    [id_perf])
     return cursor.fetchone()[0]
+
 
 def create_CSV_train_data(connexion_bd):
     cursor = connexion_bd.cursor()

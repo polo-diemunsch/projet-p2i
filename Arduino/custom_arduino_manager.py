@@ -9,8 +9,9 @@ class CustomArduinoManager:
     transférant les données du gant.
     """
 
-    def __init__(self, app):
+    def __init__(self, app, data_processing):
         self.app = app
+        self.data_processing = data_processing
 
         self.mic_manager = None
         self.glove_manager = None
@@ -78,7 +79,7 @@ class CustomArduinoManager:
 
             print(id_notes_with_amplitudes)
 
-            self.app.get_mic_values(id_notes_with_amplitudes)
+            self.data_processing.get_mic_values(id_notes_with_amplitudes)
 
     def glove_callback(self, input_line):
         """
@@ -107,7 +108,7 @@ class CustomArduinoManager:
             # self.t2 = time.time()
             # print()
 
-            self.app.get_glove_values(accelero_x, accelero_y, frequence_cardiaque, pression_doigts)
+            self.data_processing.get_glove_values(accelero_x, accelero_y, frequence_cardiaque, pression_doigts)
 
     def close(self):
         """
