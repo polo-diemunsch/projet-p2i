@@ -403,18 +403,7 @@ def create_CSV_train_data(connexion_bd):
 
     with open("train_data.csv", 'w', encoding='utf-8', newline="") as fichier:
         writer = csv.writer(fichier, delimiter=';', quotechar='"')
-        for ligne in cursor:
-            writer.writerow(ligne)
-
-def create_CSV_test_data(connexion_bd):
-    cursor = connexion_bd.cursor()
-    cursor.execute("SELECT BPM.valeur, BPM.tpsDepuisDebut, Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
-                   "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal, Perf.bpmMoy "
-                   "FROM MesureBPM BPM, MesureAccelero  Acc, MesureTouche MT, Performance Perf "
-                   "WHERE Perf.idPerf = BPM.idPerf AND Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf;")
-
-    with open("test_data.csv", 'w', encoding='utf-8', newline="") as fichier:
-        writer = csv.writer(fichier, delimiter=';', quotechar='"')
+        writer.writerow(["BPM_valeur", "BPM_tpsDepuisDebut", "Acc_valeurX", "Acc_valeurY", "Acc_tpsDepuisDebut", "MT_note", "MT_doigt", "MT_tpsPresse", "MT_tpsDepuisDebut", "Perf_idMorceau", "Perf_nbFaussesNotes", "Perf_nbNotesTotal", "Perf_bpmMoy", "Mu_niveau"])
         for ligne in cursor:
             writer.writerow(ligne)
 
