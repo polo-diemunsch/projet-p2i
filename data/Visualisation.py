@@ -16,10 +16,10 @@ import tkinter as tk
      preclabel.grid(row = 0,column = 1,ipadx=150)
      bpmlabel = tk.Label(fenetre,text = f"BPM Moyen \n {BPM_moyen} BPM",bg = "#EFF828")
      bpmlabel.grid(row = 1, column = 0,ipadx = 150)
-     if ancien < nouveau:
+     if ancien_niv < niv_estime:
             nivlabel = tk.Label(fenetre,text = f"Evolution du niveau \n {ancien_niv} ↗ {niv_estime}",bg = "#50FF00")
             nivlabel.grid(row=1,column=1,ipadx=115)
-     elif ancien == nouveau:
+     elif ancien_niv == niv_estime:
             nivlabel = tk.Label(fenetre,text = f"Evolution du niveau \n {ancien_niv} = {niv_estime}",bg = "#FFFFFF")
             nivlabel.grid(row=1,column=1,ipadx=115)
      else:
