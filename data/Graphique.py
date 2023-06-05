@@ -75,5 +75,5 @@ def graphique_precision(connexion_bd, id_perf):
         plt.bar(l_date, l_ratio)
         plt.xlabel('Date de la prestation')
         plt.ylabel('Ratio de Précision (en %)')
-        plt.axis([l_date[0], l_date[-1]], [0, 100])
+        plt.axis([l_date[0], l_date[-1], 0, 100])
         plt.show()
