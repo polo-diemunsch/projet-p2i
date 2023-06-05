@@ -404,7 +404,6 @@ def create_CSV_train_data(connexion_bd):
     with open("train_data.csv", 'w', encoding='utf-8', newline="") as fichier:
         writer = csv.writer(fichier, delimiter=';', quotechar='"')
         for ligne in cursor:
-            print(ligne)
             writer.writerow(ligne)
 
 def create_CSV_test_data(connexion_bd):
@@ -427,6 +426,7 @@ def lire_fichier_csv(chemin_vers_fichier):
         reader = csv.reader(fichier, delimiter=';', quotechar='"')
         for ligne in reader:
             nb_lignes += 1
+            print(f"ligne = {ligne}")
             numero = ligne[0]
             mesure = ligne[1]
             somme += float(mesure)

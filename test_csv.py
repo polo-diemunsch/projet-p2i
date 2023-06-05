@@ -6,8 +6,6 @@ cbd.create_CSV_train_data(connexion_bd)
 cbd.create_CSV_test_data(connexion_bd)
 cbd.fermer_connexion_bd(connexion_bd)
 
-cbd.lire_fichier_csv("train_data.csv")
-
 import pandas as pd # library to work with dataframes
 import numpy as np # numeric calculations
 
