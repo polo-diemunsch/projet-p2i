@@ -25,4 +25,3 @@ import tkinter as tk
      else:
             nivlabel = tk.Label(fenetre,text = f"Evolution du niveau \n {ancien_niv} ↘ {niv_estime}",bg = "#DA6262")
             nivlabel.grid(row=1,column=1,ipadx=115)
-     
