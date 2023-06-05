@@ -49,7 +49,7 @@ print("-" * 10 + "Nettoyage des doublons" + "-" * 10 + "\n")
 
 nb_doublon = train_data.duplicated().sum()  # nombre de doublons
 if nb_doublon == 0:
-    print("Abscence de doublon...\n")
+    print("Absence de doublon...\n")
 else:
     # supprimer les doublons en modifiant le jeu de données en question
     print(f"{nb_doublon} doublons détectés...")

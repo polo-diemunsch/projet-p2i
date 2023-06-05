@@ -406,17 +406,3 @@ def create_CSV_train_data(connexion_bd):
         writer.writerow(["BPM_valeur", "BPM_tpsDepuisDebut", "Acc_valeurX", "Acc_valeurY", "Acc_tpsDepuisDebut", "MT_note", "MT_doigt", "MT_tpsPresse", "MT_tpsDepuisDebut", "Perf_idMorceau", "Perf_nbFaussesNotes", "Perf_nbNotesTotal", "Perf_bpmMoy", "Mu_niveau"])
         for ligne in cursor:
             writer.writerow(ligne)
-
-def lire_fichier_csv(chemin_vers_fichier):
-    print(f"\nLecture du fichier CSV: {chemin_vers_fichier}")
-    nb_lignes = 0
-    somme = 0.0
-    with open(chemin_vers_fichier, 'r', encoding='utf-8') as fichier:
-        reader = csv.reader(fichier, delimiter=';', quotechar='"')
-        for ligne in reader:
-            nb_lignes += 1
-            print(f"ligne = {ligne}")
-            numero = ligne[0]
-            mesure = ligne[1]
-            somme += float(mesure)
-            print(f"Le capteur n°{numero} a mesuré {mesure}")
