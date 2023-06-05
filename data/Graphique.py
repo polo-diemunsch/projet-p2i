@@ -38,7 +38,7 @@ def graphique_niveau(connexion_bd, id_perf):
         plt.plot(l_date, l_niveau)
         plt.xlabel('Date de la prestation')
         plt.ylabel('Niveau Estimé')
-        plt.show
+        plt.show()
 
 def graphique_nb_fausses_notes(connexion_bd, id_perf):
     last_perf, tuples = cbd.get_perf(connexion_bd, id_perf)
@@ -50,7 +50,7 @@ def graphique_nb_fausses_notes(connexion_bd, id_perf):
         plt.plot(l_date, l_nombre)
         plt.xlabel('Date de la prestation')
         plt.ylabel('Nombre de fausses notes')
-        plt.show
+        plt.show()
 
 def graphique_BPM_moyen(connexion_bd, id_perf):
     last_perf, tuples = cbd.get_perf(connexion_bd, id_perf)
@@ -62,7 +62,7 @@ def graphique_BPM_moyen(connexion_bd, id_perf):
         plt.bar(l_date, l_BPMmoy)
         plt.xlabel('Date de la prestation')
         plt.ylabel('BPM Moyen')
-        plt.show
+        plt.show()
 
 def graphique_precision(connexion_bd, id_perf):
     last_perf, tuples = cbd.get_perf(connexion_bd, id_perf)
@@ -75,4 +75,4 @@ def graphique_precision(connexion_bd, id_perf):
         plt.xlabel('Date de la prestation')
         plt.ylabel('Ratio de Précision (en %)')
         plt.axis([l_date[0], l_date[-1]], [0, 100])
-        plt.show
+        plt.show()
