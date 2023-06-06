@@ -264,7 +264,7 @@ def get_touches_perf(connexion_bd, id_perf):
         La liste est triée par moment où appuyer
     """
     cursor = connexion_bd.cursor()
-    cursor.execute("SELECT note, tpsPresse, tpsDepuisDebut FROM MesureTouche WHERE idPerf=%s ORDER BY tpsDepuisDebut DESC", [id_perf])
+    cursor.execute("SELECT note, tpsPresse, tpsDepuisDebut, doigt FROM MesureTouche WHERE idPerf=%s ORDER BY tpsDepuisDebut DESC", [id_perf])
     return cursor.fetchall()
 
 

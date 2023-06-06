@@ -597,15 +597,20 @@ class App(tk.Tk):
         while self.tiles:
             self.canvas.delete(self.tiles.pop())
 
-    def load_keys(self, touches, colors):
+    def load_keys(self, touches, color_type):
         """
         Charge les touches données avec les couleurs données sur le canvas.
 
         Paramètres :
             list touches: Liste des touches dont il faut placer les tuiles
-            list(str) colors: Liste de taille le nombre de notes possibles contenant la couleur que doit prendre chaque touche
+            list(str) color_type: Liste de taille le nombre de notes possibles contenant la couleur que doit prendre chaque touche
         """
-        for note_index, tps_presse, tps_depuis_debut in touches:
+        for infos in touches:
+            if len(infos) > 3:
+                note_index, tps_presse, tps_depuis_debut, doigt = infos
+            else:
+                note_index, tps_presse, tps_depuis_debut = infos
+
             if note_index <= len(self.white_notes):
                 x0 = note_index * self.WIDTH_WHITE_KEYS
                 x1 = (note_index + 1) * self.WIDTH_WHITE_KEYS
@@ -616,7 +621,39 @@ class App(tk.Tk):
             y0 = - self.PX_PER_SEC * tps_depuis_debut
             y1 = y0 - self.PX_PER_SEC * tps_presse
 
-            self.tiles.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill=colors[note_index], width=2))
+            if color_type == "rainbow_notes":
+                if note_index < len(self.white_notes):
+                    if note_index % 2:
+                        i = (len(self.white_notes) + note_index) // 2
+                    else:
+                        i = note_index // 2
+
+                    h, s, v = i / len(self.white_notes), .8, 1.0
+
+                else:
+                    note_index -= len(self.white_notes)
+                    if note_index % 2:
+                        i = (len(self.black_notes) + note_index) // 2
+                    else:
+                        i = note_index // 2
+
+                    h, s, v = i / len(self.black_notes), .8, 1.0
+
+                r, g, b = colorsys.hsv_to_rgb(h, s, v)
+                color = '#%02x%02x%02x' % (round(r * 255), round(g * 255), round(b * 255))
+
+            elif color_type == "rainbow_finger":
+                if len(infos) > 3:
+                    h, s, v = (doigt + .8) / 5, .8, 1.0
+                    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+                    color = '#%02x%02x%02x' % (round(r * 255), round(g * 255), round(b * 255))
+                else:
+                    color = "red"
+
+            else:
+                color = color_type
+
+            self.tiles.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=2))
             self.canvas.lower(self.tiles[-1])
 
     def replay_selected(self, event=None):
@@ -631,12 +668,12 @@ class App(tk.Tk):
         id_morceau = self.perf_name_combo_to_data[self.perf_combo_var.get()][2]
         touches_ref = cbd.get_touches_morceau_ref(self.connexion_bd, id_morceau)
 
-        self.load_keys(touches_ref, ["" for _ in range(len(self.white_notes) + len(self.black_notes))])
+        self.load_keys(touches_ref, "")
 
         id_perf = self.perf_name_combo_to_data[self.perf_combo_var.get()][0]
         touches_jouees = cbd.get_touches_perf(self.connexion_bd, id_perf)
 
-        self.load_keys(touches_jouees, ["#00FFFF" for _ in range(len(self.white_notes) + len(self.black_notes))])
+        self.load_keys(touches_jouees, "rainbow_finger")
 
     def song_selected(self, event=None):
         """
@@ -650,13 +687,7 @@ class App(tk.Tk):
         id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
         touches_ref = cbd.get_touches_morceau_ref(self.connexion_bd, id_morceau)
 
-        colors = []
-        for note_index in range(len(self.white_notes) + len(self.black_notes)):
-            h, l, s = note_index / (len(self.white_notes) + len(self.black_notes)), .7, .5
-            r, g, b = colorsys.hls_to_rgb(h, l, s)
-            colors.append('#%02x%02x%02x' % (round(r * 255), round(g * 255), round(b * 255)))
-
-        self.load_keys(touches_ref, colors)
+        self.load_keys(touches_ref, "rainbow_notes")
 
     def move_tiles(self, last_frame_time):
         """
