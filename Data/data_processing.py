@@ -56,7 +56,7 @@ class DataProcessing:
             int frequence_cardiaque: Valeur de fréquence cardiaque
             bytes pression_doigts: Valeurs d'appui de chaque doigt
         """
-        temps_depuis_debut = round(time.time() - self.time_start, 3) - .5
+        temps_depuis_debut = round(time.time() - self.time_start, 3) - .05
         self.glove_values.append((temps_depuis_debut, pression_doigts, frequence_cardiaque, accelero_x, accelero_y))
 
         for i in range(5):
