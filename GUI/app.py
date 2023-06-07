@@ -24,7 +24,7 @@ class App(tk.Tk):
         self.white_notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5', 'A5', 'B5', 'C6']
         self.black_notes = ['Db4', 'Eb4', 'Gb4', 'Ab4', 'Bb4', 'Db5', 'Eb5', 'Gb5', 'Ab5', 'Bb5']
 
-        self.possible_levels = ["Claqué au sol", "N'a jamais touché de piano", "Débutant", "Intermédiaire", "Confirmé",
+        self.possible_levels = ["Claqué au sol", "Jamais touché de piano", "Débutant", "Intermédiaire", "Confirmé",
                                 "Expert", "Frédéric Chopin"]
 
         self.WIDTH_WHITE_KEYS = 60
@@ -32,7 +32,7 @@ class App(tk.Tk):
         self.WIDTH_BLACK_KEYS = 35
         self.HEIGHT_BLACK_KEYS = 125
 
-        self.WIDTH_SIDE_PANEL = 300
+        self.WIDTH_SIDE_PANEL = 350
 
         self.PX_PER_SEC = 200
 
@@ -55,6 +55,9 @@ class App(tk.Tk):
         self.perf_name_combo_to_data = {}
 
         self.tiles = []
+
+        self.time_start = None
+        self.play_mode = "play"     # play / replay
 
         self.mic_values = []
         self.glove_values = []
@@ -590,12 +593,13 @@ class App(tk.Tk):
         """
         Arrête le défilement des tuiles et les efface toutes.
         """
+        self.time_start = None
         if self.after_id is not None:
             self.after_cancel(self.after_id)
             self.after_id = None
 
         while self.tiles:
-            self.canvas.delete(self.tiles.pop())
+            self.canvas.delete(self.tiles.pop()[0])
 
     def load_keys(self, touches, color_type):
         """
@@ -642,6 +646,8 @@ class App(tk.Tk):
                 r, g, b = colorsys.hsv_to_rgb(h, s, v)
                 color = '#%02x%02x%02x' % (round(r * 255), round(g * 255), round(b * 255))
 
+                self.tiles.append((self.canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=2), tps_depuis_debut, tps_presse))
+
             elif color_type == "rainbow_finger":
                 if len(infos) > 3:
                     h, s, v = (doigt + .8) / 5, .8, 1.0
@@ -650,11 +656,12 @@ class App(tk.Tk):
                 else:
                     color = "red"
 
-            else:
-                color = color_type
+                self.tiles.append((self.canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=0), tps_depuis_debut, tps_presse))
 
-            self.tiles.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=2))
-            self.canvas.lower(self.tiles[-1])
+            else:
+                self.tiles.append((self.canvas.create_rectangle(x0, y0, x1, y1, fill=color_type, width=2), tps_depuis_debut, tps_presse))
+
+            self.canvas.lower(self.tiles[-1][0])
 
     def replay_selected(self, event=None):
         """
@@ -689,25 +696,29 @@ class App(tk.Tk):
 
         self.load_keys(touches_ref, "rainbow_notes")
 
-    def move_tiles(self, last_frame_time):
+    def move_tiles(self):
         """
         Déplace les tuiles vers le bas en fonction du temps écoulé depuis last_frame_time.
 
         Paramètres :
             float last_frame_time: temps (en secondes) au moment du dernier déplacement.
         """
-        dy = self.PX_PER_SEC * (time.time() - last_frame_time)
+        t = time.time()
 
-        for tile in self.tiles:
-            self.canvas.move(tile, 0, dy)
+        for tile, tps_depuis_debut, tps_presse in self.tiles:
+            x0, y0, x1, y1 = self.canvas.coords(tile)
+            y0 = self.PX_PER_SEC * (3.0 - float(tps_depuis_debut) + (t - self.time_start))
+            y1 = y0 - float(self.PX_PER_SEC * tps_presse)
 
-        if self.canvas.coords(self.tiles[0])[1] >= self.HEIGHT - self.HEIGHT_WHITE_KEYS + 1.0 * self.PX_PER_SEC:
-            if self.data_processing.time_start is not None:
+            self.canvas.coords(tile, x0, y0, x1, y1)
+
+        if self.canvas.coords(self.tiles[0][0])[1] >= self.HEIGHT - self.HEIGHT_WHITE_KEYS + 1.0 * self.PX_PER_SEC:
+            if self.play_mode == "play":
                 self.play_stop(end_of_song=True)
             else:
                 self.launch_replay_stop()
         else:
-            self.after_id = self.after(10, self.move_tiles, time.time())
+            self.after_id = self.after(10, self.move_tiles)
 
     def launch_replay_stop(self):
         """
@@ -716,7 +727,9 @@ class App(tk.Tk):
         if self.replay_button["text"] == "Replay":
             self.replay_selected()
             self.replay_button["text"] = "Stop"
-            self.after_id = self.after(10, self.move_tiles, time.time())
+            self.time_start = time.time() + (self.HEIGHT - self.HEIGHT_WHITE_KEYS) / self.PX_PER_SEC
+            self.play_mode = "replay"
+            self.after_id = self.after(10, self.move_tiles)
 
         else:
             self.replay_button["text"] = "Replay"
@@ -730,8 +743,10 @@ class App(tk.Tk):
         if self.play_stop_button["text"] == "Jouer !":
             self.song_selected()
             self.play_stop_button["text"] = "Stop"
-            self.after_id = self.after(10, self.move_tiles, time.time())
-            self.data_processing.initialisation(time.time() + (self.HEIGHT - self.HEIGHT_WHITE_KEYS) / self.PX_PER_SEC)
+            self.time_start = time.time() + (self.HEIGHT - self.HEIGHT_WHITE_KEYS) / self.PX_PER_SEC
+            self.play_mode = "play"
+            self.after_id = self.after(10, self.move_tiles)
+            self.data_processing.initialisation()
             self.custom_arduino_manager.recording = True
 
         else:
@@ -753,26 +768,3 @@ class App(tk.Tk):
             self.play_stop_button["state"] = tk.NORMAL
         else:
             self.play_stop_button["state"] = tk.DISABLED
-
-    @staticmethod
-    def nb_fausses_notes(touches_ref, touches_jouees):
-        """
-        Cette fontion calcule le nombre de fausses notes jouées dans le morceau.
-
-        Paramètres :
-            list touches_ref : les informations de référence du morceau
-            lits touches_jouees : les informations des notes jouées par le musicien.
-
-        Renvoi :
-            int : le nombre de fausses notes
-        """
-        tolerance_temps = 0.150
-        nb_bonnes_notes = 0
-
-        for note_ref, temps_presse_ref, temps_depuis_debut_ref in touches_ref:
-            for note_jouee, temps_presse_jouee, temps_depuis_debut_jouee in touches_jouees:
-                if note_ref == note_jouee and abs(temps_depuis_debut_ref - temps_depuis_debut_jouee) < tolerance_temps \
-                        and abs(temps_depuis_debut_ref + temps_presse_ref - (temps_depuis_debut_jouee + temps_presse_jouee)) < tolerance_temps:
-                    nb_bonnes_notes += 1
-
-        return len(touches_ref) - nb_bonnes_notes
