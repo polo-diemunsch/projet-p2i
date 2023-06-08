@@ -114,7 +114,8 @@ class DataProcessing:
             mesure_touche.append((id_perf, id_note, i_doigt, temps_depuis_debut, temps_presse))
 
         nb_fausses_notes = self.nb_fausses_notes(cbd.get_touches_morceau_ref(connexion_bd, id_morceau), mesure_touche)
-        cbd.update_performance(connexion_bd, id_perf, nb_fausses_notes, len(mesure_touche), sum(freqs_cardiaque) / len(freqs_cardiaque), None)
+        avg_freq = sum(freqs_cardiaque) / len(freqs_cardiaque) if len(freqs_cardiaque) != 0 else 0
+        cbd.update_performance(connexion_bd, id_perf, nb_fausses_notes, len(mesure_touche), avg_freq, None)
 
         nom_combo = cbd.get_titre_morceau(connexion_bd, infos[2]) + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
         self.app.update_replay_combo(nom_combo, infos)

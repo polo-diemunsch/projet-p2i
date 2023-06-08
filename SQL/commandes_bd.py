@@ -218,6 +218,21 @@ def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, 
     connexion_bd.commit()
 
 
+def del_performance(connexion_bd, id_perf):
+    """
+    Supprime une performance et toutes les mesures y étant associées.
+
+    Paramètres :
+        int id_perf: Identifiant de la performance
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute("DELETE FROM MesureTouche WHERE idPerf = %s", [id_perf])
+    cursor.execute("DELETE FROM MesureAccelero WHERE idPerf = %s", [id_perf])
+    cursor.execute("DELETE FROM MesureBPM WHERE idPerf = %s", [id_perf])
+    cursor.execute("DELETE FROM Performance WHERE idPerf = %s", [id_perf])
+    connexion_bd.commit()
+
+
 def get_morceaux(connexion_bd):
     """
     Récupère les id et titres des morceaux présents dans la base de données.

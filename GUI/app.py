@@ -1,8 +1,8 @@
 import tkinter as tk
+from tkinter import ttk, messagebox
 import colorsys
-from tkinter import ttk
-import SQL.commandes_bd as cbd
 import time
+import SQL.commandes_bd as cbd
 from Arduino.custom_arduino_manager import CustomArduinoManager
 from Data.data_processing import DataProcessing
 
@@ -181,7 +181,11 @@ class App(tk.Tk):
 
         self.replay_button = tk.Button(self.side_panel, text="Replay", command=self.launch_replay_stop,
                                        state=tk.DISABLED, font=(self.theme["font"], "13"), bg=self.theme["button_bg"])
-        self.replay_button.grid(row=i, column=0, columnspan=2, sticky="n")
+        self.replay_button.grid(row=i, column=0, sticky="n")
+
+        self.del_button = tk.Button(self.side_panel, text="Supprimer", command=self.del_perf,
+                                       state=tk.DISABLED, font=(self.theme["font"], "13"), bg=self.theme["button_bg"])
+        self.del_button.grid(row=i, column=1, sticky="n")
 
         i += 1
 
@@ -571,22 +575,24 @@ class App(tk.Tk):
             nom_combo = titres[id_morceau] + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
             self.perf_name_combo_to_data[nom_combo] = infos[:4]
 
-        self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
-        if self.perf_name_combo_to_data.keys():
-            self.perf_combo.current(0)
-            self.replay_button["state"] = tk.NORMAL
-        else:
-            self.replay_button["state"] = tk.DISABLED
+        self.update_state_replay_combo_and_buttons()
 
     def update_replay_combo(self, nom_combo, infos):
         self.perf_name_combo_to_data[nom_combo] = infos
 
+        self.update_state_replay_combo_and_buttons()
+
+    def update_state_replay_combo_and_buttons(self):
         self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
+
         if self.perf_name_combo_to_data.keys():
             self.perf_combo.current(len(self.perf_name_combo_to_data) - 1)
             self.replay_button["state"] = tk.NORMAL
+            self.del_button["state"] = tk.NORMAL
         else:
             self.replay_button["state"] = tk.DISABLED
+            self.del_button["state"] = tk.DISABLED
+            self.perf_combo_var.set("")
 
     def stop_and_remove_keys(self):
         """
@@ -767,3 +773,10 @@ class App(tk.Tk):
             self.play_stop_button["state"] = tk.NORMAL
         else:
             self.play_stop_button["state"] = tk.DISABLED
+
+    def del_perf(self):
+        if messagebox.askyesno("Supprimer ?", "Êtes-vous sûr de vouloir supprimer la performance ?"):
+            id_perf = self.perf_name_combo_to_data[self.perf_combo_var.get()][0]
+            cbd.del_performance(self.connexion_bd, id_perf)
+            del self.perf_name_combo_to_data[self.perf_combo_var.get()]
+            self.update_state_replay_combo_and_buttons()
