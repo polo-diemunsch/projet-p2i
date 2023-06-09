@@ -72,6 +72,11 @@ void setup() {
   dataToWrite |= LSM6DS3_ACC_GYRO_FS_XL_4g;
   dataToWrite |= LSM6DS3_ACC_GYRO_ODR_XL_104Hz;
 
+  //Now, write the patched together data
+  myIMU.writeRegister(LSM6DS3_ACC_GYRO_CTRL1_XL, dataToWrite);
+
+  //Set the ODR bit
+  myIMU.readRegister(&dataToWrite, LSM6DS3_ACC_GYRO_CTRL4_C);
 
   dataToWrite &= ~((uint8_t)LSM6DS3_ACC_GYRO_BW_SCAL_ODR_ENABLED);
 

@@ -107,15 +107,12 @@ class DataProcessing:
 
             nb_iterations += 1
 
-        mesure_touche = []
-
         for id_note, i_doigt, temps_depuis_debut, temps_presse in self.mesure_touche_without_id_perf:
             cbd.insert_touche_mesure(connexion_bd, id_perf, id_note, i_doigt, temps_presse, temps_depuis_debut)
-            mesure_touche.append((id_perf, id_note, i_doigt, temps_depuis_debut, temps_presse))
 
-        nb_fausses_notes = self.nb_fausses_notes(cbd.get_touches_morceau_ref(connexion_bd, id_morceau), mesure_touche)
+        nb_fausses_notes = self.nb_fausses_notes(cbd.get_touches_morceau_ref(connexion_bd, id_morceau), self.mesure_touche_without_id_perf)
         avg_freq = sum(freqs_cardiaque) / len(freqs_cardiaque) if len(freqs_cardiaque) != 0 else 0
-        cbd.update_performance(connexion_bd, id_perf, nb_fausses_notes, len(mesure_touche), avg_freq, None)
+        cbd.update_performance(connexion_bd, id_perf, nb_fausses_notes, len(self.mesure_touche_without_id_perf), avg_freq, None)
 
         nom_combo = cbd.get_titre_morceau(connexion_bd, infos[2]) + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
         self.app.update_replay_combo(nom_combo, infos)
@@ -139,7 +136,7 @@ class DataProcessing:
         nb_bonnes_notes = 0
 
         for note_ref, temps_presse_ref, temps_depuis_debut_ref in touches_ref:
-            for note_jouee, temps_presse_jouee, temps_depuis_debut_jouee in touches_jouees:
+            for note_jouee, i_doigt, temps_presse_jouee, temps_depuis_debut_jouee in touches_jouees:
                 if note_ref == note_jouee and abs(temps_depuis_debut_ref - temps_depuis_debut_jouee) < tolerance_temps \
                         and abs(temps_depuis_debut_ref + temps_presse_ref - (temps_depuis_debut_jouee + temps_presse_jouee)) < tolerance_temps:
                     nb_bonnes_notes += 1
