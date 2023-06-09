@@ -1,3 +1,5 @@
+import decimal
+
 import SQL.commandes_bd as cbd
 import time
 from datetime import datetime
@@ -132,13 +134,13 @@ class DataProcessing:
         Renvoi :
             int : le nombre de fausses notes
         """
-        tolerance_temps = 0.5
+        tolerance_temps = .5
         nb_bonnes_notes = 0
 
         for note_ref, temps_presse_ref, temps_depuis_debut_ref in touches_ref:
-            for note_jouee, i_doigt, temps_presse_jouee, temps_depuis_debut_jouee in touches_jouees:
-                if note_ref == note_jouee and abs(temps_depuis_debut_ref - temps_depuis_debut_jouee) < tolerance_temps \
-                        and abs(temps_depuis_debut_ref + temps_presse_ref - (temps_depuis_debut_jouee + temps_presse_jouee)) < tolerance_temps:
+            for note_jouee, i_doigt, temps_depuis_debut_jouee, temps_presse_jouee in touches_jouees:
+                if note_ref == note_jouee and abs(float(temps_depuis_debut_ref) - temps_depuis_debut_jouee) < tolerance_temps \
+                        and abs(float(temps_depuis_debut_ref + temps_presse_ref) - (temps_depuis_debut_jouee + temps_presse_jouee)) < tolerance_temps:
                     nb_bonnes_notes += 1
 
         return len(touches_jouees) - nb_bonnes_notes
