@@ -5,13 +5,12 @@ from sklearn.preprocessing import MinMaxScaler  # min-max scaler
 from sklearn import tree  # decision trees
 from sklearn import metrics  # evaluation metrics
 from sklearn.neighbors import KNeighborsClassifier  # knn
-import matplotlib.pyplot as plt  # Visialization library
+import matplotlib.pyplot as plt  # Visualization library
 
-# Code permettant de recréer les fichier csv si on veut les modifier
+# Code permettant de recréer le fichier csv si on veut le modifier
 """
 connexion_bd = cbd.ouvrir_connexion_bd()
 cbd.create_CSV_train_data(connexion_bd)
-cbd.create_CSV_test_data(connexion_bd)
 cbd.fermer_connexion_bd(connexion_bd)
 """
 
