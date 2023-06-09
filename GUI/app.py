@@ -6,6 +6,8 @@ import SQL.commandes_bd as cbd
 import time
 from Arduino.custom_arduino_manager import CustomArduinoManager
 from Data.data_processing import DataProcessing
+import Data.Graphique as grp
+
 
 
 class App(tk.Tk):
@@ -203,7 +205,13 @@ class App(tk.Tk):
 
         self.play_stop_button = tk.Button(self.side_panel, text="Jouer !", command=self.play_stop, state=tk.DISABLED,
                                           font=(self.theme["font"], "16"), bg=self.theme["button_bg"])
-        self.play_stop_button.grid(row=i, column=0, columnspan=2)
+        self.play_stop_button.grid(row=i, column=0)
+
+        self.stat_button = tk.Button(self.side_panel, text="Statistiques", command=self.stats,
+                                     font=(self.theme["font"], "12"), bg=self.theme["button_bg"])
+        self.stat_button.grid(row=i, column=1)
+
+
 
         ################################# CANVAS #################################
 
@@ -776,3 +784,24 @@ class App(tk.Tk):
                     nb_bonnes_notes += 1
 
         return len(touches_ref) - nb_bonnes_notes
+
+    def fen_perf(self):
+        id_perf = cbd.get_last_id_perf(self.connexion_bd)
+        fen_last = tk.Toplevel()
+        id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
+        id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
+        grp.tableau_last(self.connexion_bd,id_musicien,id_morceau,fen_last)
+        grp.graphique_BPM(self.connexion_bd,id_perf,fen_last)
+        grp.graphique_accelero(self.connexion_bd,id_perf,fen_last)
+
+    def stats(self):
+        id_perf = cbd.get_last_id_perf(self.connexion_bd)
+        id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
+        id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
+        fen_stat = tk.Toplevel()
+        grp.graphique_niveau(self.connexion_bd,id_musicien,id_morceau,fen_stat)
+        grp.graphique_precision(self.connexion_bd,id_musicien,id_morceau,fen_stat)
+        grp.graphique_nb_fausses_notes(self.connexion_bd,id_musicien,id_morceau,fen_stat)
+        grp.graphique_BPM_moyen(self.connexion_bd,id_musicien,id_morceau,fen_stat)
+
+
