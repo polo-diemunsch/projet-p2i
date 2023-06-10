@@ -654,9 +654,9 @@ class App(tk.Tk):
         id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
         id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
         fen_stat = tk.Toplevel()
-        grp.graphique_niveau(self.connexion_bd, id_musicien,id_morceau, fen_stat)
-        grp.graphique_precision(self.connexion_bd, id_musicien,id_morceau, fen_stat)
-        grp.graphique_nb_fausses_notes(self.connexion_bd, id_musicien,id_morceau, fen_stat)
-        grp.graphique_BPM_moyen(self.connexion_bd, id_musicien,id_morceau, fen_stat)
+        grp.graphique_niveau(self.connexion_bd, id_musicien, id_morceau, fen_stat)
+        grp.graphique_precision(self.connexion_bd, id_musicien, id_morceau, fen_stat)
+        grp.graphique_nb_fausses_notes(self.connexion_bd, id_musicien, id_morceau, fen_stat)
+        grp.graphique_BPM_moyen(self.connexion_bd, id_musicien, id_morceau, fen_stat)
 
 
