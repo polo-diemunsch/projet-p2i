@@ -89,8 +89,8 @@ class CustomArduinoManager:
             bytes input_line: données brutes reçues de l'Arduino de transmission du gant
         """
         if self.recording:
-            accelero_x = int.from_bytes(input_line[0:2], "little")
-            accelero_y = int.from_bytes(input_line[2:4], "little")
+            accelero_x = int.from_bytes(input_line[0:2], "little", signed=True)
+            accelero_y = int.from_bytes(input_line[2:4], "little", signed=True)
             frequence_cardiaque = int.from_bytes(input_line[4:5], "little")
             pression_doigts = int.from_bytes(input_line[5:6], "little")
 

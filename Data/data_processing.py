@@ -1,3 +1,5 @@
+import decimal
+
 import SQL.commandes_bd as cbd
 import time
 from datetime import datetime
@@ -10,12 +12,11 @@ class DataProcessing:
 
         self.initialisation()
 
-    def initialisation(self, time_start=None):
+    def initialisation(self):
         self.mesure_touche_without_id_perf = []
         self.mic_values = []
         self.glove_values = []
 
-        self.time_start = None if (time_start is None) else time_start
         self.id_perf = None
 
         self.data = {}
@@ -30,13 +31,16 @@ class DataProcessing:
         Paramètres :
             dict id_notes_with_amplitudes: index notes et amplitudes calculées sur l'Arduino du micro
         """
-        temps_depuis_debut = round(time.time() - self.time_start, 3) - .1
+        temps_depuis_debut = round(time.time() - self.app.time_start, 3)
         self.mic_values.append((temps_depuis_debut, id_notes_with_amplitudes))
 
         for i_doigt in self.data:
             if self.data[i_doigt]:
                 if self.data[i_doigt]["id_note"] is None:
-                    self.fill_id_note_max_amp(id_notes_with_amplitudes, i_doigt)
+                    if temps_depuis_debut - self.data[i_doigt]["temps_depuis_debut"] >= .5:
+                        self.data[i_doigt] = {}
+                    else:
+                        self.fill_id_note_max_amp(id_notes_with_amplitudes, i_doigt)
 
                 elif id_notes_with_amplitudes.get(self.data[i_doigt]["id_note"], 0) < 15:
                     self.mesure_touche_without_id_perf.append((self.data[i_doigt]["id_note"], i_doigt, self.data[i_doigt]["temps_depuis_debut"],
@@ -56,7 +60,7 @@ class DataProcessing:
             int frequence_cardiaque: Valeur de fréquence cardiaque
             bytes pression_doigts: Valeurs d'appui de chaque doigt
         """
-        temps_depuis_debut = round(time.time() - self.time_start, 3) - .05
+        temps_depuis_debut = round(time.time() - self.app.time_start, 3)
         self.glove_values.append((temps_depuis_debut, pression_doigts, frequence_cardiaque, accelero_x, accelero_y))
 
         for i in range(5):
@@ -87,26 +91,56 @@ class DataProcessing:
         print(self.glove_values)
         print(self.mesure_touche_without_id_perf)
 
-        date_perf = datetime.fromtimestamp(self.time_start)
+        date_perf = datetime.fromtimestamp(self.app.time_start)
         infos = (id_musicien, id_morceau, date_perf)
         id_perf = cbd.insert_performance(connexion_bd, *infos)
         infos = (id_perf, *infos)
 
-        # nb_iterations = 0
-        # for temps_depuis_debut, pression_doigts, frequence_cardiaque, accelero_x, accelero_y in self.glove_values:
-        #     cbd.insert_accelero(connexion_bd, id_perf, accelero_x, accelero_y, temps_depuis_debut)
-        #     if nb_iterations % 75 == 0 and nb_iterations != 0:
-        #         cbd.insert_BPM(connexion_bd, id_perf, frequence_cardiaque, temps_depuis_debut)
-        #
-        #     nb_iterations += 1
+        freqs_cardiaque = []
+
+        nb_iterations = 0
+        for temps_depuis_debut, pression_doigts, frequence_cardiaque, accelero_x, accelero_y in self.glove_values:
+            if nb_iterations % 20 == 0:
+                cbd.insert_accelero(connexion_bd, id_perf, accelero_x, accelero_y, temps_depuis_debut)
+
+            if nb_iterations % 150 == 0 and nb_iterations != 0:
+                cbd.insert_BPM(connexion_bd, id_perf, frequence_cardiaque, temps_depuis_debut)
+                freqs_cardiaque.append(frequence_cardiaque)
+
+            nb_iterations += 1
 
         for id_note, i_doigt, temps_depuis_debut, temps_presse in self.mesure_touche_without_id_perf:
             cbd.insert_touche_mesure(connexion_bd, id_perf, id_note, i_doigt, temps_presse, temps_depuis_debut)
 
-        self.time_start = None
+        nb_fausses_notes = self.nb_fausses_notes(cbd.get_touches_morceau_ref(connexion_bd, id_morceau), self.mesure_touche_without_id_perf)
+        avg_freq = sum(freqs_cardiaque) / len(freqs_cardiaque) if len(freqs_cardiaque) != 0 else 0
+        cbd.update_performance(connexion_bd, id_perf, nb_fausses_notes, len(self.mesure_touche_without_id_perf), avg_freq, None)
 
         nom_combo = cbd.get_titre_morceau(connexion_bd, infos[2]) + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
         self.app.update_replay_combo(nom_combo, infos)
 
         print("done")
         print()
+
+    @staticmethod
+    def nb_fausses_notes(touches_ref, touches_jouees):
+        """
+        Cette fontion calcule le nombre de fausses notes jouées dans le morceau.
+
+        Paramètres :
+            list touches_ref : les informations de référence du morceau
+            lits touches_jouees : les informations des notes jouées par le musicien.
+
+        Renvoi :
+            int : le nombre de fausses notes
+        """
+        tolerance_temps = .5
+        nb_bonnes_notes = 0
+
+        for note_ref, temps_presse_ref, temps_depuis_debut_ref in touches_ref:
+            for note_jouee, i_doigt, temps_depuis_debut_jouee, temps_presse_jouee in touches_jouees:
+                if note_ref == note_jouee and abs(float(temps_depuis_debut_ref) - temps_depuis_debut_jouee) < tolerance_temps \
+                        and abs(float(temps_depuis_debut_ref + temps_presse_ref) - (temps_depuis_debut_jouee + temps_presse_jouee)) < tolerance_temps:
+                    nb_bonnes_notes += 1
+
+        return len(touches_jouees) - nb_bonnes_notes
