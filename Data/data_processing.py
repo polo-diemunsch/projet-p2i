@@ -1,5 +1,3 @@
-import decimal
-
 import SQL.commandes_bd as cbd
 import time
 from datetime import datetime
@@ -118,6 +116,8 @@ class DataProcessing:
 
         nom_combo = cbd.get_titre_morceau(connexion_bd, infos[2]) + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
         self.app.update_replay_combo(nom_combo, infos)
+
+        self.app.fen_perf()
 
         print("done")
         print()

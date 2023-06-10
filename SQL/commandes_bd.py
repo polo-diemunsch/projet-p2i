@@ -320,13 +320,11 @@ def get_perf(connexion_bd, id_musicien, id_morceau):
     le niveau actuel du musicien, le niveau estimé du musicien
     """
     cursor = connexion_bd.cursor()
-    cursor.execute("SELECT mu.nom, mo.titre, p.datePerf, p.nbFaussesNotes, ((p.nbNotesTotal-p.nbFaussesNotes)/p.nbNotesTotal), p.bpmMoy, mu.niveau, p.niveauEstime "
+    cursor.execute("SELECT mu.nom, mo.titre, p.datePerf, p.nbFaussesNotes, p.nbNotesTotal, p.bpmMoy, mu.niveau, p.niveauEstime "
                    +"FROM Musicien mu, Morceau mo, Performance p "
                    +"WHERE p.idMusicien = %s AND p.idMorceau = %s AND mu.idMusicien = p.idMusicien AND mo.idMorceau = p.idMorceau "
                    +"ORDER BY p.datePerf ASC", [id_musicien, id_morceau])
-    valeurs = cursor.fetchall()
-    last_perf = valeurs.pop()
-    return last_perf, valeurs
+    return cursor.fetchall()
 
 
 def get_BPM(connexion_bd, id_perf):

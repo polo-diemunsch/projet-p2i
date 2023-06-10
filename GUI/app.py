@@ -5,7 +5,7 @@ import time
 import SQL.commandes_bd as cbd
 from Arduino.custom_arduino_manager import CustomArduinoManager
 from Data.data_processing import DataProcessing
-import Data.Graphique as grp
+import Data.graphique as grp
 
 
 
@@ -270,154 +270,6 @@ class App(tk.Tk):
         cbd.fermer_connexion_bd(self.connexion_bd)
         self.custom_arduino_manager.close()
         self.destroy()
-
-    # def get_mic_values(self, id_notes_with_amplitudes):
-    #     """
-    #     Stocke les données du micro envoyées depuis le manager Arduino en ajoutant le temps depuis le début du morceau.
-    #
-    #     Paramètres :
-    #         dict id_notes_with_amplitudes: index notes et amplitudes calculées sur l'Arduino du micro
-    #     """
-    #     for i in range(len(self.white_keys)):
-    #         if i in id_notes_with_amplitudes and id_notes_with_amplitudes[i] > 10 + i*7:
-    #             self.canvas.itemconfig(self.white_keys[i], fill=self.theme["button_bg"])
-    #         else:
-    #             self.canvas.itemconfig(self.white_keys[i], fill="white")
-    #
-    #     for i in range(len(self.black_keys)):
-    #         if i + len(self.white_keys) in id_notes_with_amplitudes and id_notes_with_amplitudes[i + len(self.white_keys)] > 10 + i*7:
-    #             self.canvas.itemconfig(self.black_keys[i], fill=self.theme["bg"])
-    #         else:
-    #             self.canvas.itemconfig(self.black_keys[i], fill="black")
-    #
-    #     self.mic_values.append((round(time.time() - self.time_start, 3), id_notes_with_amplitudes))
-    #
-    # def get_glove_values(self, accelero_x, accelero_y, frequence_cardiaque, pression_doigts):
-    #     """
-    #     Stocke les données du gant envoyées depuis le manager Arduino en ajoutant le temps depuis le début du morceau.
-    #
-    #     Paramètres :
-    #         int accelero_x: Valeur en X de l'accéléromètre
-    #         int accelero_y: Valeur en Y de l'accéléromètre
-    #         int frequence_cardiaque: Valeur de fréquence cardiaque
-    #         bytes pression_doigts: Valeurs d'appui de chaque doigt
-    #     """
-    #     self.glove_values.append((round(time.time() - self.time_start, 3), pression_doigts, frequence_cardiaque,
-    #                               accelero_x, accelero_y))
-    #
-    # def process_data_end_song(self):
-    #     """
-    #     Traite les données à la fin d'un morceau.
-    #     """
-    #     self.mic_values.reverse()
-    #     self.glove_values.reverse()
-    #     print()
-    #     print(self.mic_values)
-    #     print(self.glove_values)
-    #
-    #     date_perf = datetime.fromtimestamp(self.time_start)
-    #     infos = (self.musician_name_combo_to_data[self.musician_combo_var.get()][0],
-    #              self.song_title_combo_to_data[self.song_combo_var.get()][0], date_perf)
-    #     id_perf = cbd.insert_performance(self.connexion_bd, *infos)
-    #     infos = (id_perf, *infos)
-    #
-    #     with open(f"Data/{id_perf}.py", "w") as file:
-    #         file.write(f"mic_values = {str(self.mic_values)}\n\nglove_values = {str(self.glove_values)}\n")
-    #
-    #     mesure_touches = []
-    #     Data = [{}, {}, {}, {}, {}]
-    #
-    #     nb_iterations = 0
-    #     data_mic = self.mic_values.pop()
-    #
-    #     while self.glove_values:
-    #         data_glove = self.glove_values.pop()
-    #         if self.mic_values and self.mic_values[-1][0] >= data_glove[0]:
-    #             data_mic = self.mic_values.pop()
-    #
-    #         cbd.insert_accelero(self.connexion_bd, id_perf, data_glove[3], data_glove[4], data_glove[0])
-    #         if nb_iterations % 75 == 0 and nb_iterations != 0:
-    #             cbd.insert_BPM(self.connexion_bd, id_perf, data_glove[2], data_glove[0])
-    #
-    #         to_compare = []
-    #         nb_finished_to_do = 0
-    #
-    #         for i in range(5):
-    #             if (data_glove[1] >> i) & 1:
-    #                 if not Data[i]:
-    #                     Data[i]["doigt"] = i
-    #                     Data[i]["temps_depuis_debut"] = data_glove[0]
-    #                     Data[i]["notes_possibles"] = []
-    #
-    #                 if data_mic[0] >= Data[i]["temps_depuis_debut"]:
-    #                     Data[i]["notes_possibles"].append(data_mic[1])
-    #
-    #             elif Data[i]:
-    #                 Data[i]["temps_presse"] = data_glove[0] - Data[i]["temps_depuis_debut"]
-    #
-    #                 if not to_compare:
-    #                     for j in range(5):
-    #                         if Data[j]:
-    #                             for id_note, avg_amp in self.avg_amplitudes_notes(Data[j]["notes_possibles"]):
-    #                                 to_compare.append((avg_amp, id_note, j))
-    #
-    #                             if "temps_presse" in Data[j]:
-    #                                 nb_finished_to_do += 1
-    #
-    #         to_compare.sort(reverse=True)
-    #         id_note_done = set()
-    #         finger_done = set()
-    #
-    #         processing_done = False
-    #         i = 0
-    #
-    #         while not processing_done and i < len(to_compare):
-    #             avg_amp, id_note, i_finger = to_compare[i]
-    #             if id_note not in id_note_done and i_finger not in finger_done:
-    #                 id_note_done.add(id_note)
-    #                 finger_done.add(i_finger)
-    #                 if "temps_presse" in Data[i_finger]:
-    #                     values = (id_perf, id_note, i_finger, Data[i_finger]["temps_presse"], Data[i_finger]["temps_depuis_debut"])
-    #                     mesure_touches.append(values)
-    #                     cbd.insert_touche_mesure(self.connexion_bd, *values)
-    #
-    #                     Data[i_finger] = {}
-    #                     nb_finished_to_do -= 1
-    #
-    #                     if nb_finished_to_do == 0:
-    #                         processing_done = True
-    #
-    #             i += 1
-    #
-    #         nb_iterations += 1
-    #
-    #     print(mesure_touches)
-    #
-    #     nom_combo = cbd.get_titre_morceau(self.connexion_bd, infos[2]) + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
-    #     self.perf_name_combo_to_data[nom_combo] = infos
-    #
-    #     self.perf_combo["values"] = list(self.perf_name_combo_to_data.keys())
-    #     if self.perf_name_combo_to_data.keys():
-    #         self.perf_combo.current(len(self.perf_name_combo_to_data) - 1)
-    #         self.replay_button["state"] = tk.NORMAL
-    #     else:
-    #         self.replay_button["state"] = tk.DISABLED
-    #
-    # @staticmethod
-    # def avg_amplitudes_notes(list_id_notes_with_amplitudes):
-    #     result = {}
-    #     # nb_id_note = {}
-    #     for five_id_notes_with_amplitudes in list_id_notes_with_amplitudes:
-    #         for id_note, amp in five_id_notes_with_amplitudes.items():
-    #             result[id_note] = result.get(id_note, 0) + amp
-    #             # nb_id_note[id_note] = nb_id_note.get(id_note, 0) + 1
-    #
-    #     # for id_note in result:
-    #     #     result[id_note] /= nb_id_note[id_note]
-    #
-    #     list_result = sorted(result.items(), reverse=True, key=lambda x: x[1])
-    #
-    #     return list_result[:5]
 
     def highlight_key(self, id_note):
         if id_note < len(self.white_keys):
@@ -794,18 +646,17 @@ class App(tk.Tk):
         fen_last = tk.Toplevel()
         id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
         id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
-        grp.tableau_last(self.connexion_bd,id_musicien,id_morceau,fen_last)
-        grp.graphique_BPM(self.connexion_bd,id_perf,fen_last)
-        grp.graphique_accelero(self.connexion_bd,id_perf,fen_last)
+        grp.tableau_last(self.connexion_bd, id_musicien,id_morceau, fen_last)
+        grp.graphique_BPM(self.connexion_bd, id_perf, fen_last)
+        grp.graphique_accelero(self.connexion_bd, id_perf, fen_last)
 
     def stats(self):
-        id_perf = cbd.get_last_id_perf(self.connexion_bd)
         id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
         id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
         fen_stat = tk.Toplevel()
-        grp.graphique_niveau(self.connexion_bd,id_musicien,id_morceau,fen_stat)
-        grp.graphique_precision(self.connexion_bd,id_musicien,id_morceau,fen_stat)
-        grp.graphique_nb_fausses_notes(self.connexion_bd,id_musicien,id_morceau,fen_stat)
-        grp.graphique_BPM_moyen(self.connexion_bd,id_musicien,id_morceau,fen_stat)
+        grp.graphique_niveau(self.connexion_bd, id_musicien,id_morceau, fen_stat)
+        grp.graphique_precision(self.connexion_bd, id_musicien,id_morceau, fen_stat)
+        grp.graphique_nb_fausses_notes(self.connexion_bd, id_musicien,id_morceau, fen_stat)
+        grp.graphique_BPM_moyen(self.connexion_bd, id_musicien,id_morceau, fen_stat)
 
 
