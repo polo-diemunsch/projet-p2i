@@ -204,6 +204,7 @@ class App(tk.Tk):
         widget = ttk.Combobox(self.side_panel, values=list(self.song_title_combo_to_data.keys()),
                               width=20, state="readonly", textvariable=self.song_combo_var)
         widget.grid(row=i, column=0, columnspan=2)
+        widget.bind("<<ComboboxSelected>>", self.update_state_stat_button)
         if self.song_title_combo_to_data.keys():
             widget.current(0)
 
@@ -213,7 +214,7 @@ class App(tk.Tk):
                                           font=(self.theme["font"], "16"), bg=self.theme["button_bg"])
         self.play_stop_button.grid(row=i, column=0)
 
-        self.stat_button = tk.Button(self.side_panel, text="Statistiques", command=self.stats,
+        self.stat_button = tk.Button(self.side_panel, text="Statistiques", command=self.stats, state=tk.DISABLED,
                                      font=(self.theme["font"], "12"), bg=self.theme["button_bg"])
         self.stat_button.grid(row=i, column=1)
 
@@ -436,6 +437,7 @@ class App(tk.Tk):
             self.perf_name_combo_to_data[nom_combo] = infos[:4]
 
         self.update_state_replay_combo_and_buttons()
+        self.update_state_stat_button()
 
     def update_replay_combo(self, nom_combo, infos):
         self.perf_name_combo_to_data[nom_combo] = infos
@@ -453,6 +455,14 @@ class App(tk.Tk):
             self.replay_button["state"] = tk.DISABLED
             self.del_button["state"] = tk.DISABLED
             self.perf_combo_var.set("")
+
+    def update_state_stat_button(self, event=None):
+        if self.musician_combo_var.get() and self.song_combo_var.get() and \
+            cbd.get_perf(self.connexion_bd, self.musician_name_combo_to_data[self.musician_combo_var.get()][0],
+                         self.song_title_combo_to_data[self.song_combo_var.get()][0]):
+            self.stat_button["state"] = tk.NORMAL
+        else:
+            self.stat_button["state"] = tk.DISABLED
 
     def stop_and_remove_keys(self):
         """

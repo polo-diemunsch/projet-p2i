@@ -321,9 +321,9 @@ def get_perf(connexion_bd, id_musicien, id_morceau):
     """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT mu.nom, mo.titre, p.datePerf, p.nbFaussesNotes, p.nbNotesTotal, p.bpmMoy, mu.niveau, p.niveauEstime "
-                   +"FROM Musicien mu, Morceau mo, Performance p "
-                   +"WHERE p.idMusicien = %s AND p.idMorceau = %s AND mu.idMusicien = p.idMusicien AND mo.idMorceau = p.idMorceau "
-                   +"ORDER BY p.datePerf ASC", [id_musicien, id_morceau])
+                   "FROM Musicien mu, Morceau mo, Performance p "
+                   "WHERE p.idMusicien = %s AND p.idMorceau = %s AND mu.idMusicien = p.idMusicien AND mo.idMorceau = p.idMorceau "
+                   "ORDER BY p.datePerf ASC", [id_musicien, id_morceau])
     return cursor.fetchall()
 
 
@@ -409,6 +409,7 @@ def get_bpm_moyen(connexion_bd, id_perf):
     cursor.execute("SELECT AVG(valeur) FROM MesureBPM WHERE idPerf = %s",
                    [id_perf])
     return cursor.fetchone()[0]
+
 
 def get_last_id_perf(connexion_bd):
     """
