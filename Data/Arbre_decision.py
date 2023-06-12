@@ -11,7 +11,7 @@ import operator
 # Code permettant de recréer le fichier csv si on veut le modifier
 
 connexion_bd = cbd.ouvrir_connexion_bd()
-cbd.create_CSV_train_data(connexion_bd)
+#cbd.create_CSV_train_data(connexion_bd)
 
 # RECUPERATION DES DONNEES
 
@@ -119,7 +119,7 @@ clf_tree.fit(X_train_scaled.values, y_train.values)
 
 plt.figure()
 plt.figure(figsize=(10,10))
-tree.plot_tree(clf_tree, filled = True, fontsize=6, max_depth=3)
+tree.plot_tree(clf_tree, filled = True, fontsize=6, max_depth=4)
 plt.show()
 
 # Entrainement
@@ -138,9 +138,10 @@ cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=conf_m,
 fig, ax = plt.subplots(figsize=(8,8))
 ax.grid(False)
 cm_display.plot(ax=ax)
+plt.savefig("matrice_de_confusion_Arbre_Decision.png")
 plt.show()
 
-"""
+
 # KNN
 print("*" * 40)
 print("Création du modèle KNN")
@@ -154,40 +155,71 @@ knn.fit(X_train_scaled, y_train)
 
 # Entrainement
 print("Entrainement du modèle...\n")
-y_pred = knn.predict(X_test_scaled)
+y_pred_knn = knn.predict(X_test_scaled)
 
 # Evaluation
 # Accuracy
-print(f"La précision de KNN : {metrics.accuracy_score(y_test, y_pred)}")
+print(f"La précision de KNN : {metrics.accuracy_score(y_test, y_pred_knn)}")
 # matrice de confusion
-conf_m = metrics.confusion_matrix(y_test, y_pred)
+conf_m = metrics.confusion_matrix(y_test, y_pred_knn)
 print("Résumé d'évaluation de l'arbre : ")
-print(metrics.classification_report(y_test, y_pred))
-"""
+print(metrics.classification_report(y_test, y_pred_knn))
 
-perf_to_analyse = cbd.get_perf_to_analyse(connexion_bd, 111)
-perf_to_analyse = pd.DataFrame(perf_to_analyse)
+# matrice de confusion
+conf_m = metrics.confusion_matrix(y_test, y_pred_knn)
+# display
+cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=conf_m,
+                                           display_labels=["Jamais touché de piano", "Débutant", "Intermédiaire", "Confirmé", "Expert"])
+fig, ax = plt.subplots(figsize=(8,8))
+ax.grid(False)
+cm_display.plot(ax=ax)
+plt.savefig("matrice_de_confusion_KNN.png")
+plt.show()
 
-scaler = MinMaxScaler()  # create a scaler object
-scaler.fit(X_train.values)
-perf_to_analyse = pd.DataFrame(scaler.transform(perf_to_analyse))
 
-predicted = clf_tree.predict(perf_to_analyse)
-jtdp_count = 0
-intermediaire_count = 0
-debutant_count = 0
-confirme_count = 0
-expert_count = 0
+#ANALYSE D'UNE PERFORMANCE
+print("*" * 40)
+print("Analyse d'une performance")
+print("*" * 40 + "\n")
 
-dico_results = {}
 
-for result in predicted:
-    if result in dico_results.keys():
-        dico_results[result] += 1
+def analyse_performance(id_perf_to_analyse):
+    perf_to_analyse = cbd.get_perf_to_analyse(connexion_bd, id_perf_to_analyse)
+    perf_to_analyse = pd.DataFrame(perf_to_analyse)
+
+    scaler = MinMaxScaler()  # create a scaler object
+    scaler.fit(X_train.values)
+    perf_to_analyse = pd.DataFrame(scaler.transform(perf_to_analyse))
+
+    predicted_tree = clf_tree.predict(perf_to_analyse)
+
+    dico_results = {}
+    for result in predicted_tree:
+        if result in dico_results.keys():
+            dico_results[result] += 1
+        else:
+            dico_results[result] = 1
+    print(dico_results)
+    print(f"Niveau estimé : {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
+
+    predicted_knn = clf_tree.predict(perf_to_analyse)
+    dico_results = {}
+    for result in predicted_tree:
+        if result in dico_results.keys():
+            dico_results[result] += 1
+        else:
+            dico_results[result] = 1
+    print(dico_results)
+    print(f"Niveau estimé : {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
+
+analyse = True
+while analyse:
+    id_perf_to_analyse = int(input("Entrez l'id de la performance à analyser : "))
+    if id_perf_to_analyse != 0:
+        analyse_performance(id_perf_to_analyse)
     else:
-        dico_results[result] = 1
+        analyse = False
 
-print(dico_results)
-print(f"Niveau estimé : {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
+
 
 cbd.fermer_connexion_bd(connexion_bd)
