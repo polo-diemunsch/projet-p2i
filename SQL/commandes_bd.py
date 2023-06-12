@@ -420,6 +420,16 @@ def get_bpm_moyen(connexion_bd, id_perf):
                    [id_perf])
     return cursor.fetchone()[0]
 
+def get_nom_musicien (connexion_bd, id_musicien):
+    """
+    Récupère le nom du musicien associé à un identifiant
+
+    Paramètres:
+        int id_musicien: Identifiant du musicien
+    """
+    cursor=connexion_bd.cursor()
+    cursor.execute("SELECT nom FROM Musicien WHERE idMusicien = %s", [id_musicien])
+    return cursor.fetchone()[0]
 
 def get_last_id_perf(connexion_bd):
     """

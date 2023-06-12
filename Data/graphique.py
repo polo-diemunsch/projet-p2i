@@ -204,16 +204,13 @@ def tableau_last(connexion_bd, id_musicien, id_morceau, main):
         int id_morceau: Identifiant du morceau
     """
     data = cbd.get_perf(connexion_bd, id_musicien, id_morceau)[-1]
-    all_musiciens = cbd.get_musiciens(connexion_bd)
     date = data[2]
     nb_fausses_notes = data[3]
     precision = (data[4] - nb_fausses_notes) / data[4] if data[4] != 0 else 0
     BPM_moyen = data[5]
     ancien_niv = data[6]
     niv_estime = data[7]
-    for mus in all_musiciens:
-        if mus[0] == id_musicien:
-            musicien = mus[1]
+    musicien = cbd.get_nom_musicien(connexion_bd,id_musicien)
     morceau = cbd.get_titre_morceau(connexion_bd,id_morceau)
     info_perf = tk.Label(main, text = f"Performance de {musicien} sur {morceau} réalisée le {date}")
     info_perf.pack()
