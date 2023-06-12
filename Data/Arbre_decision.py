@@ -31,12 +31,9 @@ print("Résumé du dataset :\n")
 train_data.info()
 print("")
 
-pd.set_option("max_columns", None) # show all cols
 # 5 premières lignes du jeu d'entrainement
+pd.set_option("max_columns", None) # show all cols
 print(f"Affichage des 5 premières ligne : \n{train_data.head(5)}\n")
-
-# stats de résumé
-# print(train_data.describe())
 
 # NETTOYAGE
 print("*" * 40)
