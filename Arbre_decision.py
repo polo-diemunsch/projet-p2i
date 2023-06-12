@@ -11,7 +11,7 @@ import operator
 # Code permettant de recréer le fichier csv si on veut le modifier
 
 connexion_bd = cbd.ouvrir_connexion_bd()
-#cbd.create_CSV_train_data(connexion_bd)
+cbd.create_CSV_train_data(connexion_bd)
 
 # RECUPERATION DES DONNEES
 
