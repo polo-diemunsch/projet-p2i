@@ -8,7 +8,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 def graphique_BPM(connexion_bd, id_perf, main):
     '''
     Affiche pour une performance donnée (déterminée par id_perf), l'évolution du rythme
-    cardiaque du pianiste concernée en fonction du temps passé depuis le début
+    cardiaque du pianiste concernée en fonction du temps passé depuis le début du morceau
+
+    Paramètres :
+        int id_perf: Identifiant de la performance
     '''
     fig = Figure(figsize=(4, 3), dpi=100)
     ax = fig.add_subplot(111)
@@ -35,7 +38,10 @@ def graphique_accelero(connexion_bd, id_perf, main):
     2. L'évolution de l'accélération de la main du pianiste sur l'axe des y (sur la largeur du 
         piano)
     Les axes x et y sont les deux seuls axes qui nous intéressent car ce sont les seuls qui
-    appartiennent au plan horizontal (le z prenant aussi en compte l'action de la gravité)
+    appartiennent au plan horizontal (l'axe z prenant aussi en compte l'action de la gravité)
+
+    Paramètres :
+        int id_perf: Identifiant de la performance
     '''
     fig = Figure(figsize=(8, 3), dpi=100)
     ax = fig.add_subplot(121)
@@ -64,6 +70,10 @@ def graphique_niveau(connexion_bd, id_musicien, id_morceau, main):
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution de son niveau sur ce morceau en fonction de la date 
     de prestation
+
+    Paramètres :
+        int id_musicien: Identifiant du musicien
+        int id_morceau: Identifiant du morceau
     '''
     fig = Figure(figsize=(4, 3), dpi=100)
     ax = fig.add_subplot(111)
@@ -87,6 +97,10 @@ def graphique_nb_fausses_notes(connexion_bd, id_musicien, id_morceau,main):
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution du nombre de fausses notes jouées par ce dernier 
     sur ce morceau en fonction de la date de la prestation
+
+    Paramètres :
+        int id_musicien: Identifiant du musicien
+        int id_morceau: Identifiant du morceau
     '''
     fig = Figure(figsize=(4, 3), dpi=100)
     ax = fig.add_subplot(111)
@@ -110,6 +124,10 @@ def graphique_BPM_moyen(connexion_bd, id_musicien, id_morceau, main):
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution de son rythme cardiaque sur ce morceau en fonction
     de la date de prestation
+
+    Paramètres :
+        int id_musicien: Identifiant du musicien
+        int id_morceau: Identifiant du morceau
     '''
     fig = Figure(figsize=(4, 3), dpi=100)
     ax = fig.add_subplot(111)
@@ -133,6 +151,10 @@ def graphique_precision(connexion_bd, id_musicien, id_morceau, main):
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution du ratio de précision (nb bonnes notes/nb total)
     de ce dernier sur ce morceau en fonction de la date de la prestation
+
+    Paramètres :
+        int id_musicien: Identifiant du musicien
+        int id_morceau: Identifiant du morceau
     '''
     fig = Figure(figsize=(4, 3), dpi=100)
     ax = fig.add_subplot(111)
@@ -153,7 +175,15 @@ def graphique_precision(connexion_bd, id_musicien, id_morceau, main):
     canvas.get_tk_widget().grid(row=1, column=1)
 
 
-def tableau_last(connexion_bd,id_musicien, id_morceau, main):
+def tableau_last(connexion_bd, id_musicien, id_morceau, main):
+    """
+    Affiche un tableau récapitulatif de la performance avec la précision, le nombre de
+    fausses notes, le BPM cardiaque moyen ainsi que le niveau estimé.
+
+    Paramètres :
+        int id_musicien: Identifiant du musicien
+        int id_morceau: Identifiant du morceau
+    """
     data = cbd.get_perf(connexion_bd, id_musicien, id_morceau)[-1]
     nb_fausses_notes = data[3]
     precision = (data[4] - nb_fausses_notes) / data[4] if data[4] != 0 else 0

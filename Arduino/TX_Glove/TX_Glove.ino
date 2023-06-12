@@ -161,13 +161,13 @@ void loop() {
   ma_trame.frequence_cardiaque = BPM;
   ma_trame.pression_doigts = val_flexi;
 
-  //  Serial.print(tempX);
-  //  Serial.print(" ");
-  //  Serial.print(tempY);
-  //  Serial.print(" ");
-  //  Serial.print(BPM);
-  //  Serial.print(" ");
-  // Serial.println(val_flexi);
+// Serial.print(tempX);
+// Serial.print(" ");
+// Serial.print(tempY);
+// Serial.print(" ");
+// Serial.print(BPM);
+// Serial.print(" ");
+// Serial.println(val_flexi);
 
   int state = radio.transmit((byte*)&ma_trame, sizeof(ma_trame));
 
@@ -195,5 +195,6 @@ void loop() {
 
   // }
 
-  while (millis() - time0 < 50);
+  while (millis() - time0 < 50)
+    ;
 }
