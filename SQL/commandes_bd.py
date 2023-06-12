@@ -421,6 +421,9 @@ def get_last_id_perf(connexion_bd):
 
 
 def create_CSV_train_data(connexion_bd):
+    """
+
+    """
     cursor = connexion_bd.cursor()
     cursor.execute("SELECT Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
                    "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal, Perf.niveauEstime "
