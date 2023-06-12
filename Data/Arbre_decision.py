@@ -217,6 +217,4 @@ while analyse:
     else:
         analyse = False
 
-
-
 cbd.fermer_connexion_bd(connexion_bd)
