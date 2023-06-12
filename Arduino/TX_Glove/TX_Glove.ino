@@ -37,7 +37,7 @@ int compteur = 0;
 int BPM;
 
 int Signal;
-int Threshold = 600;
+int Threshold = 1022;
 
 int16_t tempX;
 int16_t tempY;
@@ -127,7 +127,7 @@ void loop() {
   }
 
   compteur += 1;
-  if (compteur == 75) {
+  if (compteur == 150) {
     BPM = battement * 8;
     battement = 0;
     compteur = 0;
@@ -195,6 +195,5 @@ void loop() {
 
   // }
 
-  while (millis() - time0 < 50)
-    ;
+  while (millis() - time0 < 50);
 }
