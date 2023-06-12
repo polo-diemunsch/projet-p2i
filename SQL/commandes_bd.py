@@ -422,13 +422,32 @@ def get_last_id_perf(connexion_bd):
 
 def create_CSV_train_data(connexion_bd):
     cursor = connexion_bd.cursor()
-    cursor.execute("SELECT BPM.valeur, BPM.tpsDepuisDebut, Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
-                   "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal, Perf.bpmMoy, Mu.niveau "
-                   "FROM MesureBPM BPM, MesureAccelero  Acc, MesureTouche MT, Performance Perf, Musicien Mu "
-                   "WHERE Perf.idPerf = BPM.idPerf AND Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf AND Mu.idMusicien = Perf.idMusicien;")
+    cursor.execute("SELECT Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
+                   "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal, Perf.niveauEstime "
+                   "FROM MesureAccelero  Acc, MesureTouche MT, Performance Perf "
+                   "WHERE Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf AND Perf.niveauEstime is NOT NULL;")
 
     with open("train_data.csv", 'w', encoding='utf-8', newline="") as fichier:
         writer = csv.writer(fichier, delimiter=';', quotechar='"')
-        writer.writerow(["BPM_valeur", "BPM_tpsDepuisDebut", "Acc_valeurX", "Acc_valeurY", "Acc_tpsDepuisDebut", "MT_note", "MT_doigt", "MT_tpsPresse", "MT_tpsDepuisDebut", "Perf_idMorceau", "Perf_nbFaussesNotes", "Perf_nbNotesTotal", "Perf_bpmMoy", "Mu_niveau"])
+        writer.writerow(["Acc_valeurX", "Acc_valeurY", "Acc_tpsDepuisDebut", "MT_note", "MT_doigt", "MT_tpsPresse", "MT_tpsDepuisDebut", "Perf_idMorceau", "Perf_nbFaussesNotes", "Perf_nbNotesTotal", "Perf_niveauEstime"])
         for ligne in cursor:
             writer.writerow(ligne)
+
+def get_perf_to_analyse(connexion_bd, id_perf = 0):
+    cursor = connexion_bd.cursor()
+    if id_perf == 0:
+        cursor.execute("Select MAX(idPerf) FROM Performance")
+        last_id = cursor.fetchone()[0]
+        cursor.execute("SELECT Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut,"
+                       " MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut, "
+                       "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal "
+                       "FROM MesureAccelero  Acc, MesureTouche MT, Performance Perf "
+                       "WHERE Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf "
+                       "AND Perf.idPerf = %s", [last_id])
+    else :
+        cursor.execute("SELECT Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
+                   "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal "
+                   "FROM MesureAccelero  Acc, MesureTouche MT, Performance Perf "
+                   "WHERE Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf AND Perf.idPerf = %s", [id_perf])
+
+    return cursor.fetchall()
