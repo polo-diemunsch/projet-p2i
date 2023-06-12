@@ -6,14 +6,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 def graphique_BPM(connexion_bd, id_perf, main):
-    '''
+    """
     Affiche pour une performance donnée (déterminée par id_perf), l'évolution du rythme
     cardiaque du pianiste concernée en fonction du temps passé depuis le début du morceau
 
     Paramètres :
         int id_perf: Identifiant de la performance
-    '''
-    fig = Figure(figsize=(4, 3), dpi=100)
+    """
+    fig = Figure(figsize=(10, 3), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_BPM(connexion_bd, id_perf)
     l_temps, l_BPM = [], []
@@ -31,7 +31,7 @@ def graphique_BPM(connexion_bd, id_perf, main):
 
 
 def graphique_accelero(connexion_bd, id_perf, main):
-    '''
+    """
     Affiche deux graphiques pour une performance donnée (déterminée par id_perf):
     1. L'évolution de l'accélération de la main du pianiste sur l'axe des x (sur la longueur du 
         piano)
@@ -42,10 +42,9 @@ def graphique_accelero(connexion_bd, id_perf, main):
 
     Paramètres :
         int id_perf: Identifiant de la performance
-    '''
-    fig = Figure(figsize=(8, 4), dpi=100)
-    ax = fig.add_subplot(121)
-    ax2 = fig.add_subplot(122)
+    """
+    fig = Figure(figsize=(10, 3), dpi=100)
+    ax = fig.add_subplot(111)
     tuples = cbd.get_accelero(connexion_bd, id_perf)
     l_temps, l_accX, l_accY = [], [], []
     for (a,b,c) in tuples:
@@ -53,12 +52,10 @@ def graphique_accelero(connexion_bd, id_perf, main):
         l_accY.append(b)
         l_temps.append(c)
     ax.plot(l_temps, l_accX, 'b', label='Accélération en X')
-    ax2.plot(l_temps, l_accY, 'r', label='Accélération en Y')
+    ax.plot(l_temps, l_accY, 'r', label='Accélération en Y')
     ax.set_title("Evolution de l'accélération de la main sur les axes x et y")
     ax.set_xlabel('Temps depuis le début (s)')
     ax.set_ylabel("Amplitude de l'accélération")
-    ax2.set_xlabel('Temps depuis le début (s)')
-    ax2.set_ylabel("Amplitude de l'accélération")
 
     canvas = FigureCanvasTkAgg(fig, master=main)
     canvas.draw()
@@ -66,7 +63,7 @@ def graphique_accelero(connexion_bd, id_perf, main):
 
 
 def graphique_niveau(connexion_bd, id_musicien, id_morceau, main, possible_levels):
-    '''
+    """
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution de son niveau sur ce morceau en fonction de la date
     de prestation
@@ -74,7 +71,7 @@ def graphique_niveau(connexion_bd, id_musicien, id_morceau, main, possible_level
     Paramètres :
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
-    '''
+    """
     fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
@@ -108,7 +105,7 @@ def graphique_niveau(connexion_bd, id_musicien, id_morceau, main, possible_level
 
 
 def graphique_nb_fausses_notes(connexion_bd, id_musicien, id_morceau,main):
-    '''
+    """
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution du nombre de fausses notes jouées par ce dernier
     sur ce morceau en fonction de la date de la prestation
@@ -116,7 +113,7 @@ def graphique_nb_fausses_notes(connexion_bd, id_musicien, id_morceau,main):
     Paramètres :
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
-    '''
+    """
     fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
@@ -137,7 +134,7 @@ def graphique_nb_fausses_notes(connexion_bd, id_musicien, id_morceau,main):
 
 
 def graphique_BPM_moyen(connexion_bd, id_musicien, id_morceau, main):
-    '''
+    """
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution de son rythme cardiaque sur ce morceau en fonction
     de la date de prestation
@@ -145,7 +142,7 @@ def graphique_BPM_moyen(connexion_bd, id_musicien, id_morceau, main):
     Paramètres :
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
-    '''
+    """
     fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
@@ -166,7 +163,7 @@ def graphique_BPM_moyen(connexion_bd, id_musicien, id_morceau, main):
 
 
 def graphique_precision(connexion_bd, id_musicien, id_morceau, main):
-    '''
+    """
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
     (déterminé par id_morceau) l'évolution du ratio de précision (nb bonnes notes/nb total)
     de ce dernier sur ce morceau en fonction de la date de la prestation
@@ -174,7 +171,7 @@ def graphique_precision(connexion_bd, id_musicien, id_morceau, main):
     Paramètres :
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
-    '''
+    """
     fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
@@ -222,8 +219,6 @@ def tableau_last(connexion_bd, id_musicien, id_morceau, main):
     info_perf.pack()
 
     fenetre = tk.Frame(main)
-    fenetre.pack()
-
     fauxlabel = tk.Label(fenetre, text=f"Nombre de fausses notes \n{nb_fausses_notes}", bg="#E72E20", font="Arial 15")
     fauxlabel.grid(row=0,column=0, ipadx=74)
     preclabel = tk.Label(fenetre,text=f"Précision \n {int(precision*100)} %",bg="#FF9900", font="Arial 15")
@@ -240,3 +235,4 @@ def tableau_last(connexion_bd, id_musicien, id_morceau, main):
         nivlabel = tk.Label(fenetre,text=f"Evolution du niveau \n {ancien_niv} ↘ {niv_estime}", bg="#DA6262", font="Arial 15")
         nivlabel.grid(row=1, column=1, ipadx=115)
 
+    fenetre.pack()

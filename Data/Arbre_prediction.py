@@ -1,17 +1,16 @@
 import SQL.commandes_bd as cbd
 import pandas as pd  # library to work with dataframes
-from sklearn.model_selection import train_test_split  # découpage de jeu de données en train et test
 from sklearn.preprocessing import MinMaxScaler  # min-max scaler
 from sklearn import tree  # decision trees
-from sklearn import metrics  # evaluation metrics
-from sklearn.neighbors import KNeighborsClassifier  # knn
-import matplotlib.pyplot as plt  # Visualization library
 import operator
+
+
 class ArbreDecision:
     def __init__(self, path_to_train_csv):
-        self.train_data = pd.read_csv("path_to_train_csv", sep=";")
+        self.train_data = pd.read_csv(path_to_train_csv, sep=";")
         self.nettoyage_doublons()
         self.nettoyage_val_manquantes()
+        self.separation_des_donnees()
         self.normalisation_train_data()
         self.creation_arbre()
 
@@ -60,7 +59,7 @@ class ArbreDecision:
         # fit the model
         self.clf_tree.fit(self.all_x_scaled.values, self.all_y.values)
 
-    def analyse_performance(self, id_perf_to_analyse, connexion_bd):
+    def analyse_performance(self, connexion_bd, id_perf_to_analyse):
         perf_to_analyse = cbd.get_perf_to_analyse(connexion_bd, id_perf_to_analyse)
         perf_to_analyse = pd.DataFrame(perf_to_analyse)
 

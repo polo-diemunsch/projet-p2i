@@ -1,4 +1,5 @@
 import SQL.commandes_bd as cbd
+from Data.Arbre_prediction import ArbreDecision
 import time
 from datetime import datetime
 
@@ -7,6 +8,8 @@ class DataProcessing:
 
     def __init__(self, app):
         self.app = app
+
+        self.prediction_tree = ArbreDecision("Data/train_data.csv")
 
         self.initialisation()
 
@@ -112,7 +115,11 @@ class DataProcessing:
 
         nb_fausses_notes = self.nb_fausses_notes(cbd.get_touches_morceau_ref(connexion_bd, id_morceau), self.mesure_touche_without_id_perf)
         avg_freq = sum(freqs_cardiaque) / len(freqs_cardiaque) if len(freqs_cardiaque) != 0 else 0
-        cbd.update_performance(connexion_bd, id_perf, nb_fausses_notes, len(self.mesure_touche_without_id_perf), avg_freq, None)
+
+        cbd.update_performance(connexion_bd, id_perf, nb_fausses_notes, len(self.mesure_touche_without_id_perf), avg_freq)
+
+        estimated_level = self.prediction_tree.analyse_performance(connexion_bd, id_perf)
+        cbd.update_performance_niveau(connexion_bd, id_perf, estimated_level)
 
         nom_combo = cbd.get_titre_morceau(connexion_bd, infos[2]) + " - " + infos[3].strftime("%d/%m/%Y %H:%M:%S")
         self.app.update_replay_combo(nom_combo, infos)

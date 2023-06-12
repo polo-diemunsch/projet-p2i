@@ -115,8 +115,8 @@ clf_tree = tree.DecisionTreeClassifier()
 clf_tree.fit(X_train_scaled.values, y_train.values)
 
 plt.figure()
-plt.figure(figsize=(10,10))
-tree.plot_tree(clf_tree, filled = True, fontsize=6, max_depth=4)
+plt.figure(figsize=(10, 10))
+tree.plot_tree(clf_tree, filled=True, fontsize=6, max_depth=4)
 plt.show()
 
 # Entrainement
@@ -131,8 +131,8 @@ print(metrics.classification_report(y_test, y_pred_tree))
 conf_m = metrics.confusion_matrix(y_test, y_pred_tree)
 # display
 cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=conf_m,
-                                           display_labels=["Jamais touché de piano", "Débutant", "Intermédiaire", "Confirmé", "Expert"])
-fig, ax = plt.subplots(figsize=(8,8))
+                                            display_labels=["Jamais touché de piano", "Débutant", "Intermédiaire", "Confirmé", "Expert"])
+fig, ax = plt.subplots(figsize=(8, 8))
 ax.grid(False)
 cm_display.plot(ax=ax)
 plt.savefig("matrice_de_confusion_Arbre_Decision.png")
@@ -157,8 +157,7 @@ y_pred_knn = knn.predict(X_test_scaled)
 # Evaluation
 # Accuracy
 print(f"La précision de KNN : {metrics.accuracy_score(y_test, y_pred_knn)}")
-# matrice de confusion
-conf_m = metrics.confusion_matrix(y_test, y_pred_knn)
+
 print("Résumé d'évaluation de l'arbre : ")
 print(metrics.classification_report(y_test, y_pred_knn))
 
@@ -166,15 +165,15 @@ print(metrics.classification_report(y_test, y_pred_knn))
 conf_m = metrics.confusion_matrix(y_test, y_pred_knn)
 # display
 cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=conf_m,
-                                           display_labels=["Jamais touché de piano", "Débutant", "Intermédiaire", "Confirmé", "Expert"])
-fig, ax = plt.subplots(figsize=(8,8))
+                                            display_labels=["Jamais touché de piano", "Débutant", "Intermédiaire", "Confirmé", "Expert"])
+fig, ax = plt.subplots(figsize=(8, 8))
 ax.grid(False)
 cm_display.plot(ax=ax)
 plt.savefig("matrice_de_confusion_KNN.png")
 plt.show()
 
 
-#ANALYSE D'UNE PERFORMANCE
+# ANALYSE D'UNE PERFORMANCE
 print("*" * 40)
 print("Analyse d'une performance")
 print("*" * 40 + "\n")
@@ -201,13 +200,14 @@ def analyse_performance(id_perf_to_analyse):
 
     predicted_knn = clf_tree.predict(perf_to_analyse)
     dico_results = {}
-    for result in predicted_tree:
+    for result in predicted_knn:
         if result in dico_results.keys():
             dico_results[result] += 1
         else:
             dico_results[result] = 1
     print(dico_results)
     print(f"Niveau estimé : {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
+
 
 analyse = True
 while analyse:

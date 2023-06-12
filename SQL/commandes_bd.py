@@ -201,7 +201,7 @@ def update_lvl_musicien(connexion_bd, id_musicien, niveau):
     connexion_bd.commit()
 
 
-def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, bpm_moy, niveau_estime):
+def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, bpm_moy):
     """
     Mets à jour les infos sur une performance (à la fin de celle-ci).
 
@@ -210,11 +210,23 @@ def update_performance(connexion_bd, id_perf, nb_fausses_notes, nb_notes_total, 
         int nb_fausses_notes: Nombre de fausses notes durant la performance
         int nb_notes_total: Nombre total de notes jouées durant la performance
         int bpm_moy: BPM moyen le long de la performance
+    """
+    cursor = connexion_bd.cursor()
+    cursor.execute("UPDATE Performance SET nbFaussesNotes=%s, nbNotesTotal=%s, bpmMoy=%s WHERE idPerf=%s;",
+                   [nb_fausses_notes, nb_notes_total, bpm_moy, id_perf])
+    connexion_bd.commit()
+
+
+def update_performance_niveau(connexion_bd, id_perf, niveau_estime):
+    """
+    Mets à jour le niveau sur une performance (à la fin de celle-ci).
+
+    Paramètres :
         str niveau_estime: Niveau estimé sur cette performance
     """
     cursor = connexion_bd.cursor()
-    cursor.execute("UPDATE Performance SET nbFaussesNotes=%s, nbNotesTotal=%s, bpmMoy=%s, niveauEstime=%s  WHERE idPerf = %s;",
-                   [nb_fausses_notes, nb_notes_total, bpm_moy, niveau_estime, id_perf])
+    cursor.execute("UPDATE Performance SET niveauEstime=%s WHERE idPerf=%s;",
+                   [niveau_estime, id_perf])
     connexion_bd.commit()
 
 
@@ -338,8 +350,7 @@ def get_BPM(connexion_bd, id_perf):
         Liste contenant les valeurs de BPM pour une performance en fonction du temps
     """
     cursor = connexion_bd.cursor()
-    cursor.execute("SELECT valeur as BPM, tpsDepuisDebut as Temps depuis Début FROM MesureBPM WHERE idPerf=%s",
-                   [id_perf])
+    cursor.execute("SELECT valeur, tpsDepuisDebut FROM MesureBPM WHERE idPerf=%s", [id_perf])
     return cursor.fetchall()
 
 
@@ -354,8 +365,7 @@ def get_accelero(connexion_bd, id_perf):
         Liste contentant les valeurs d'accéléro pour une performance en fonction depuis le début
     """
     cursor = connexion_bd.cursor()
-    cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut as Temps depuis Début FROM MesureAccelero WHERE idPerf=%s",
-                   [id_perf])
+    cursor.execute("SELECT valeurX, valeurY, tpsDepuisDebut FROM MesureAccelero WHERE idPerf=%s", [id_perf])
     return cursor.fetchall()
 
 
@@ -415,9 +425,9 @@ def get_last_id_perf(connexion_bd):
     """
     Récupère le dernier id_perf
     """
-    cursor=connexion_bd.cursor()
+    cursor = connexion_bd.cursor()
     cursor.execute("SELECT MAX(idPerf) FROM Performance")
-    return cursor.fetchone()
+    return cursor.fetchone()[0]
 
 
 def create_CSV_train_data(connexion_bd):

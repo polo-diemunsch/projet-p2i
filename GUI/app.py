@@ -664,6 +664,7 @@ class App(tk.Tk):
     def fen_perf(self):
         id_perf = cbd.get_last_id_perf(self.connexion_bd)
         fen_last = tk.Toplevel()
+        fen_last.resizable(False, False)
         id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
         id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
         grp.tableau_last(self.connexion_bd, id_musicien,id_morceau, fen_last)
@@ -672,7 +673,7 @@ class App(tk.Tk):
 
     def stats(self):
         fen_stat = tk.Toplevel()
-        fen_stat.resizable(False,False)
+        fen_stat.resizable(False, False)
         id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
         id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
         grp.graphique_niveau(self.connexion_bd, id_musicien, id_morceau, fen_stat,self.possible_levels)
