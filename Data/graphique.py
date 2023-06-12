@@ -43,7 +43,7 @@ def graphique_accelero(connexion_bd, id_perf, main):
     Paramètres :
         int id_perf: Identifiant de la performance
     '''
-    fig = Figure(figsize=(8, 3), dpi=100)
+    fig = Figure(figsize=(8, 4), dpi=100)
     ax = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
     tuples = cbd.get_accelero(connexion_bd, id_perf)
@@ -65,53 +65,70 @@ def graphique_accelero(connexion_bd, id_perf, main):
     canvas.get_tk_widget().pack()
 
 
-def graphique_niveau(connexion_bd, id_musicien, id_morceau, main):
+def graphique_niveau(connexion_bd, id_musicien, id_morceau, main, possible_levels):
     '''
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
-    (déterminé par id_morceau) l'évolution de son niveau sur ce morceau en fonction de la date 
+    (déterminé par id_morceau) l'évolution de son niveau sur ce morceau en fonction de la date
     de prestation
 
     Paramètres :
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
     '''
-    fig = Figure(figsize=(4, 3), dpi=100)
+    fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
     l_date, l_niveau = [], []
+    i=0
     for (a, b, c, d, e, f, g, h) in tuples:
-        l_date.append(c)
+        l_date.append(i-len(tuples)+1)
         l_niveau.append(h)
-    ax.plot(l_date, l_niveau)
+        i += 1
+
+    unique_levels = sorted(set(l_niveau), key=lambda x: possible_levels.index(x))
+    level_to_index = {level: possible_levels.index(level) for level in unique_levels}
+    sorted_data = sorted(zip(l_niveau, l_date), key=lambda x: level_to_index[x[0]])
+    sorted_niveau, sorted_date = zip(*sorted_data)
+
+    ax.scatter(sorted_date, sorted_niveau, s = 100,c = 'r', marker = '+')
     ax.set_title('Evolution du niveau de ' + tuples[0][0])
-    ax.set_xlabel('Date de la prestation')
+    ax.set_xlabel('Prestation')
     ax.set_ylabel('Niveau Estimé')
+
+    ax.set_yticks(range(len(unique_levels)))
+    ax.set_yticklabels(unique_levels)
+    ax.tick_params(axis='y', rotation=90)
+
+
 
     canvas = FigureCanvasTkAgg(fig, master=main)
     canvas.draw()
     canvas.get_tk_widget().grid(row=0, column=0)
 
 
+
 def graphique_nb_fausses_notes(connexion_bd, id_musicien, id_morceau,main):
     '''
     Affiche pour un musicien donné (déterminé par id_musicien) et pour un morceau donné
-    (déterminé par id_morceau) l'évolution du nombre de fausses notes jouées par ce dernier 
+    (déterminé par id_morceau) l'évolution du nombre de fausses notes jouées par ce dernier
     sur ce morceau en fonction de la date de la prestation
 
     Paramètres :
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
     '''
-    fig = Figure(figsize=(4, 3), dpi=100)
+    fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
     l_date, l_nombre = [], []
+    i=0
     for (a, b, c, d, e, f, g, h) in tuples:
-        l_date.append(c)
+        l_date.append(i-len(tuples)+1)
         l_nombre.append(d)
-    ax.plot(l_date, l_nombre)
+        i += 1
+    ax.plot(l_date, l_nombre,c='brown')
     ax.set_title('Evolution du nombre de fausses notes de ' + tuples[0][0])
-    ax.set_xlabel('Date de la prestation')
+    ax.set_xlabel('Prestation')
     ax.set_ylabel('Nombre de fausses notes')
 
     canvas = FigureCanvasTkAgg(fig, master=main)
@@ -129,16 +146,18 @@ def graphique_BPM_moyen(connexion_bd, id_musicien, id_morceau, main):
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
     '''
-    fig = Figure(figsize=(4, 3), dpi=100)
+    fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
     l_date, l_BPMmoy = [], []
+    i = 0
     for (a, b, c, d, e, f, g, h) in tuples:
-        l_date.append(c)
+        l_date.append(i-len(tuples)+1)
         l_BPMmoy.append(f)
+        i += 1
     ax.plot(l_date, l_BPMmoy)
     ax.set_title('BPM Moyen de ' + tuples[0][0] + ' durant sa prestation')
-    ax.set_xlabel('Date de la prestation')
+    ax.set_xlabel('Prestation')
     ax.set_ylabel('BPM Moyen')
 
     canvas = FigureCanvasTkAgg(fig, master=main)
@@ -156,19 +175,22 @@ def graphique_precision(connexion_bd, id_musicien, id_morceau, main):
         int id_musicien: Identifiant du musicien
         int id_morceau: Identifiant du morceau
     '''
-    fig = Figure(figsize=(4, 3), dpi=100)
+    fig = Figure(figsize=(4, 4), dpi=100)
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
     l_date, l_ratio = [], []
+    i=0
     for (a, b, c, d, e, f, g, h) in tuples:
-        l_date.append(c)
+        l_date.append(i-len(tuples)+1)
         l_ratio.append(int(((e - d) / e if e != 0 else 0) * 100))
-    ax.plot(l_date, l_ratio)
+        i += 1
+    ax.plot(l_date, l_ratio, c='g')
     ax.set_title('Evolution du ratio de précision de ' + tuples[0][0])
-    ax.set_xlabel('Date de la prestation')
+    ax.set_xlabel('Prestation')
     ax.set_ylabel('Ratio de Précision (en %)')
     ax.set_xlim(l_date[0], l_date[-1])
     ax.set_ylim(0, 100)
+    ax.tick_params(axis='y', rotation=90)
 
     canvas = FigureCanvasTkAgg(fig, master=main)
     canvas.draw()
@@ -191,7 +213,7 @@ def tableau_last(connexion_bd, id_musicien, id_morceau, main):
     ancien_niv = data[6]
     niv_estime = data[7]
     fenetre = tk.Frame(main)
-    fenetre.pack()
+    fenetre.grid(row=0, column = 0)
     fauxlabel = tk.Label(fenetre, text=f"Nombre de fausses notes \n{nb_fausses_notes}", bg="#E72E20", font="Arial 15")
     fauxlabel.grid(row=0,column=0, ipadx=74)
     preclabel = tk.Label(fenetre,text=f"Précision \n {int(precision*100)} %",bg="#FF9900", font="Arial 15")
@@ -207,3 +229,4 @@ def tableau_last(connexion_bd, id_musicien, id_morceau, main):
     else:
         nivlabel = tk.Label(fenetre,text=f"Evolution du niveau \n {ancien_niv} ↘ {niv_estime}", bg="#DA6262", font="Arial 15")
         nivlabel.grid(row=1, column=1, ipadx=115)
+
