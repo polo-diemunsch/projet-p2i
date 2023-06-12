@@ -476,6 +476,9 @@ class App(tk.Tk):
         while self.tiles:
             self.canvas.delete(self.tiles.pop()[0])
 
+        for i in range(len(self.white_notes) + len(self.black_notes)):
+            self.un_highlight_key(i)
+
     def load_keys(self, touches, color_type):
         """
         Charge les touches données avec les couleurs données sur le canvas.
@@ -600,8 +603,11 @@ class App(tk.Tk):
         Change le texte du bouton replay/stop et appelle la fonction correspondante en fonction de son texte actuel.
         """
         if self.replay_button["text"] == "Replay":
-            self.replay_selected()
             self.replay_button["text"] = "Stop"
+            if self.play_stop_button["text"] == "Stop":
+                self.play_stop()
+
+            self.replay_selected()
             self.time_start = time.time() + (self.HEIGHT - self.HEIGHT_WHITE_KEYS) / self.PX_PER_SEC
             self.play_mode = "replay"
             self.after_id = self.after(10, self.move_tiles)
@@ -616,8 +622,9 @@ class App(tk.Tk):
         Change le texte du bouton jouer/stop et appelle la fonction correspondante en fonction de son texte actuel.
         """
         if self.play_stop_button["text"] == "Jouer !":
-            self.song_selected()
             self.play_stop_button["text"] = "Stop"
+            self.replay_button["text"] = "Replay"
+            self.song_selected()
             self.time_start = time.time() + (self.HEIGHT - self.HEIGHT_WHITE_KEYS) / self.PX_PER_SEC
             self.play_mode = "play"
             self.after_id = self.after(10, self.move_tiles)
@@ -631,6 +638,9 @@ class App(tk.Tk):
                 id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
                 id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
                 self.data_processing.put_data_in_database(self.connexion_bd, id_musicien, id_morceau)
+
+                self.update_state_stat_button()
+                self.fen_perf()
 
             self.stop_and_remove_keys()
 
