@@ -667,7 +667,7 @@ class App(tk.Tk):
         fen_last.resizable(False, False)
         id_morceau = self.song_title_combo_to_data[self.song_combo_var.get()][0]
         id_musicien = self.musician_name_combo_to_data[self.musician_combo_var.get()][0]
-        grp.tableau_last(self.connexion_bd, id_musicien,id_morceau, fen_last)
+        grp.tableau_last(self.connexion_bd, id_musicien,id_morceau, fen_last, self.possible_levels)
         grp.graphique_BPM(self.connexion_bd, id_perf, fen_last)
         grp.graphique_accelero(self.connexion_bd, id_perf, fen_last)
 

@@ -76,7 +76,7 @@ def graphique_niveau(connexion_bd, id_musicien, id_morceau, main, possible_level
     ax = fig.add_subplot(111)
     tuples = cbd.get_perf(connexion_bd, id_musicien, id_morceau)
     l_date, l_niveau = [], []
-    i=0
+    i = 0
     for (a, b, c, d, e, f, g, h) in tuples:
         l_date.append(i-len(tuples)+1)
         l_niveau.append(h)
@@ -87,7 +87,7 @@ def graphique_niveau(connexion_bd, id_musicien, id_morceau, main, possible_level
     sorted_data = sorted(zip(l_niveau, l_date), key=lambda x: level_to_index[x[0]])
     sorted_niveau, sorted_date = zip(*sorted_data)
 
-    ax.scatter(sorted_date, sorted_niveau, s = 100,c = 'r', marker = '+')
+    ax.scatter(sorted_date, sorted_niveau, s=100, c='r', marker='+')
     ax.set_title('Evolution du niveau de ' + tuples[0][0])
     ax.set_xlabel('Prestation')
     ax.set_ylabel('Niveau Estimé')
@@ -101,7 +101,6 @@ def graphique_niveau(connexion_bd, id_musicien, id_morceau, main, possible_level
     canvas = FigureCanvasTkAgg(fig, master=main)
     canvas.draw()
     canvas.get_tk_widget().grid(row=0, column=0)
-
 
 
 def graphique_nb_fausses_notes(connexion_bd, id_musicien, id_morceau,main):
@@ -194,7 +193,7 @@ def graphique_precision(connexion_bd, id_musicien, id_morceau, main):
     canvas.get_tk_widget().grid(row=1, column=1)
 
 
-def tableau_last(connexion_bd, id_musicien, id_morceau, main):
+def tableau_last(connexion_bd, id_musicien, id_morceau, main, possible_levels):
     """
     Affiche un tableau récapitulatif de la performance avec la précision, le nombre de
     fausses notes, le BPM cardiaque moyen ainsi que le niveau estimé.
@@ -222,14 +221,18 @@ def tableau_last(connexion_bd, id_musicien, id_morceau, main):
     preclabel.grid(row=0,column=1, ipadx=172)
     bpmlabel = tk.Label(fenetre,text=f"BPM Moyen \n {BPM_moyen} BPM",bg="#EFF828", font="Arial 15")
     bpmlabel.grid(row=1, column=0, ipadx=150)
-    if ancien_niv < niv_estime:
+
+    ancien_niv_index = possible_levels.index(ancien_niv)
+    niv_estime_index = possible_levels.index(niv_estime)
+
+    if ancien_niv_index < niv_estime_index:
         nivlabel = tk.Label(fenetre, text=f"Evolution du niveau \n {ancien_niv} ↗ {niv_estime}", bg="#50FF00", font="Arial 15")
-        nivlabel.grid(row=1, column=1, ipadx=115)
-    elif ancien_niv == niv_estime:
+        nivlabel.grid(row=1, column=1, ipadx=100)
+    elif ancien_niv_index == niv_estime_index:
         nivlabel = tk.Label(fenetre,text=f"Evolution du niveau \n {ancien_niv} = {niv_estime}", bg="#FFFFFF", font="Arial 15")
-        nivlabel.grid(row=1, column=1, ipadx=115)
+        nivlabel.grid(row=1, column=1, ipadx=100)
     else:
         nivlabel = tk.Label(fenetre,text=f"Evolution du niveau \n {ancien_niv} ↘ {niv_estime}", bg="#DA6262", font="Arial 15")
-        nivlabel.grid(row=1, column=1, ipadx=115)
+        nivlabel.grid(row=1, column=1, ipadx=100)
 
     fenetre.pack()
