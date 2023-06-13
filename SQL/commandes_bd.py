@@ -474,3 +474,17 @@ def get_perf_to_analyse(connexion_bd, id_perf = 0):
                    "WHERE Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf AND Perf.idPerf = %s", [id_perf])
 
     return cursor.fetchall()
+
+def create_CSV_data_to_analyse(connexion_bd, id_perf):
+    cursor = connexion_bd.cursor()
+    cursor.execute(
+        "SELECT Acc.valeurX, Acc.valeurY, Acc.tpsDepuisDebut, MT.note, MT.doigt, MT.tpsPresse, MT.tpsDepuisDebut,"
+        "Perf.idMorceau, Perf.nbFaussesNotes, Perf.nbNotesTotal "
+        "FROM MesureAccelero  Acc, MesureTouche MT, Performance Perf "
+        "WHERE Perf.idPerf = Acc.idPerf AND Perf.idPerf = MT.idPerf AND Perf.idPerf = %s", [id_perf])
+
+    with open(f"perf_{id_perf}.csv", 'w', encoding='utf-8', newline="") as fichier:
+        writer = csv.writer(fichier, delimiter=';', quotechar='"')
+        writer.writerow(["Acc_valeurX", "Acc_valeurY", "Acc_tpsDepuisDebut", "MT_note", "MT_doigt", "MT_tpsPresse", "MT_tpsDepuisDebut", "Perf_idMorceau", "Perf_nbFaussesNotes", "Perf_nbNotesTotal"])
+        for ligne in cursor:
+            writer.writerow(ligne)

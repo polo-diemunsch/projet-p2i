@@ -1,4 +1,3 @@
-import SQL.commandes_bd as cbd
 import pandas as pd  # library to work with dataframes
 from sklearn.model_selection import train_test_split  # découpage de jeu de données en train et test
 from sklearn.preprocessing import MinMaxScaler  # min-max scaler
@@ -8,14 +7,8 @@ from sklearn.neighbors import KNeighborsClassifier  # knn
 import matplotlib.pyplot as plt  # Visualization library
 import operator
 
-# Code permettant de recréer le fichier csv si on veut le modifier
-
-connexion_bd = cbd.ouvrir_connexion_bd()
-#cbd.create_CSV_train_data(connexion_bd)
-
 # RECUPERATION DES DONNEES
-
-# Import des données
+# Import des données d'entrainement
 train_data = pd.read_csv('train_data.csv', sep=";")  # jeu de donnés d'entrainement
 
 # Informations générales sur le jeu de données
@@ -69,7 +62,6 @@ if nombre_valeur_manquante > 0:
         if val_manquantes_par_colonnes[i] > 0:
             liste_colonnes_avec_valeurs_manquantes.append(train_data.columns[i])
     print("Colonnes présentant des valeurs manquantes supprimées\n")
-
 else:
     print("\nPas de valeurs maquantes\n")
 
@@ -78,18 +70,13 @@ print("*" * 40)
 print("Préparation du jeu de donnée pour l'analyse prédictive")
 print("*" * 40 + "\n")
 
+# Separation en un jeu de test et un jeu d'entrainement
 print("Séparation de la donnée cible du jeu de donnée...\n")
-
 all_x = train_data.loc[:, ~train_data.columns.isin(liste_colonnes_avec_valeurs_manquantes + ['Perf_niveauEstime'])].copy()
-
 all_y = train_data['Perf_niveauEstime'].copy()  # Cible
 
 print("Création d'un jeu d'entrainement et d'un jeu de test...\n")
-
 X_train, X_test, y_train, y_test = train_test_split(all_x, all_y, test_size=0.2, random_state=42, stratify=all_y)
-print(f"X_train et y_train de même taille : {X_train.shape[0] == y_train.shape[0]}")
-print(f"X_test et y_test de même taille: {X_test.shape[0] == y_test.shape[0]}")
-print(f"Le rapport jeu de donné de test est de {X_test.shape[0] / train_data.shape[0]}% par rapport au jeu initial\n")
 
 # NORMALISATION DES DONNEES
 print("Normalisation des données...\n")
@@ -99,7 +86,6 @@ X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.col
 # transformer les données
 X_test_scaled = pd.DataFrame(scaler.transform(X_test), columns=X_train.columns)
 print("Données normalisées")
-
 
 # MODELISATION
 # ARBRE DE DECISION
@@ -114,9 +100,10 @@ clf_tree = tree.DecisionTreeClassifier()
 # fit the model
 clf_tree.fit(X_train_scaled.values, y_train.values)
 
-plt.figure()
+# Affichage de l'arbre
 plt.figure(figsize=(10, 10))
-tree.plot_tree(clf_tree, filled=True, fontsize=6, max_depth=4)
+tree.plot_tree(clf_tree, filled=True, fontsize=6, max_depth=2)  # Modifier ou supprimer max_depth pour modifier la profondeur
+# plt.savefig("arbre_de_decision_premières_branches.png")
 plt.show()
 
 # Entrainement
@@ -135,7 +122,8 @@ cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=conf_m,
 fig, ax = plt.subplots(figsize=(8, 8))
 ax.grid(False)
 cm_display.plot(ax=ax)
-plt.savefig("matrice_de_confusion_Arbre_Decision.png")
+plt.title("Matrice de confusion de l'arbre de classification")
+#plt.savefig("matrice_de_confusion_Arbre_Decision.png")
 plt.show()
 
 
@@ -169,7 +157,8 @@ cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=conf_m,
 fig, ax = plt.subplots(figsize=(8, 8))
 ax.grid(False)
 cm_display.plot(ax=ax)
-plt.savefig("matrice_de_confusion_KNN.png")
+plt.title("Matrice de confusion de KNN")
+#plt.savefig("matrice_de_confusion_KNN.png")
 plt.show()
 
 
@@ -179,16 +168,20 @@ print("Analyse d'une performance")
 print("*" * 40 + "\n")
 
 
-def analyse_performance(id_perf_to_analyse):
-    perf_to_analyse = cbd.get_perf_to_analyse(connexion_bd, id_perf_to_analyse)
-    perf_to_analyse = pd.DataFrame(perf_to_analyse)
+def analyse_performance(path_to_csv_perf_to_analyse):
+    perf_to_analyse = pd.read_csv(path_to_csv_perf_to_analyse, sep=";")
 
-    scaler = MinMaxScaler()  # create a scaler object
-    scaler.fit(X_train.values)
-    perf_to_analyse = pd.DataFrame(scaler.transform(perf_to_analyse))
+    # Normalisation du dataset a analyser
+    scaler = MinMaxScaler()
+    scaler.fit(X_train.values)  # On définit les valeurs min et max possibles comme celle du dataset d'entrainement
+    perf_to_analyse = pd.DataFrame(scaler.transform(perf_to_analyse.values))
 
-    predicted_tree = clf_tree.predict(perf_to_analyse)
+    # Prediction
+    predicted_tree = clf_tree.predict(perf_to_analyse.values)
 
+    # Recuperation des resultats
+
+    #Resultats de l'arbre de classification
     dico_results = {}
     for result in predicted_tree:
         if result in dico_results.keys():
@@ -196,25 +189,23 @@ def analyse_performance(id_perf_to_analyse):
         else:
             dico_results[result] = 1
     print(dico_results)
-    print(f"Niveau estimé : {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
+    print(f"Niveau estimé par l'arbre de classification: {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
 
-    predicted_knn = clf_tree.predict(perf_to_analyse)
+    predicted_knn = clf_tree.predict(perf_to_analyse.values)
     dico_results = {}
     for result in predicted_knn:
         if result in dico_results.keys():
             dico_results[result] += 1
         else:
             dico_results[result] = 1
-    print(dico_results)
-    print(f"Niveau estimé : {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
+    print(f"Niveau estimé par KNN: {max(dico_results.items(), key=operator.itemgetter(1))[0]}")
+    print("")
 
 
 analyse = True
 while analyse:
-    id_perf_to_analyse = int(input("Entrez l'id de la performance à analyser : "))
-    if id_perf_to_analyse != 0:
-        analyse_performance(id_perf_to_analyse)
+    path_to_csv_perf_to_analyse = input("Entrez le chemin vers le fichier csv de la performance à analyser ou appuyer sur q pour quitter : ")
+    if path_to_csv_perf_to_analyse != "q":
+        analyse_performance(path_to_csv_perf_to_analyse)
     else:
         analyse = False
-
-cbd.fermer_connexion_bd(connexion_bd)
