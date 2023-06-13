@@ -211,14 +211,14 @@ def tableau_last(connexion_bd, id_musicien, id_morceau, main, possible_levels):
     niv_estime = data[7]
     musicien = cbd.get_nom_musicien(connexion_bd,id_musicien)
     morceau = cbd.get_titre_morceau(connexion_bd,id_morceau)
-    info_perf = tk.Label(main, text = f"Performance de {musicien} sur {morceau} réalisée le {date}")
+    info_perf = tk.Label(main, text=f"Performance de {musicien} sur {morceau} réalisée le {date}", font="Arial 16")
     info_perf.pack()
 
     fenetre = tk.Frame(main)
     fauxlabel = tk.Label(fenetre, text=f"Nombre de fausses notes \n{nb_fausses_notes}", bg="#E72E20", font="Arial 15")
-    fauxlabel.grid(row=0,column=0, ipadx=74)
+    fauxlabel.grid(row=0, column=0, ipadx=74)
     preclabel = tk.Label(fenetre,text=f"Précision \n {int(precision*100)} %",bg="#FF9900", font="Arial 15")
-    preclabel.grid(row=0,column=1, ipadx=172)
+    preclabel.grid(row=0, column=1, ipadx=172)
     bpmlabel = tk.Label(fenetre,text=f"BPM Moyen \n {BPM_moyen} BPM",bg="#EFF828", font="Arial 15")
     bpmlabel.grid(row=1, column=0, ipadx=150)
 
