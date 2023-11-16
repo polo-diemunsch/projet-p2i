@@ -3,6 +3,9 @@
   Calculate a 16 bits fixed-point FFT.
   Author: Hugo 'klafyvel' Levy-Falk
   Link : https://github.com/Klafyvel/AVR-FFT
+
+  Modified by Polo Diemunsch
+  Link : https://github.com/polo-diemunsch/projet-p2i/blob/main/Arduino/Micro/Fixed16FFT.h
 */
 
 #include "Arduino.h"
