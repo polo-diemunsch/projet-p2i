@@ -8,7 +8,6 @@ from Data.data_processing import DataProcessing
 import Data.graphique as grp
 
 
-
 class App(tk.Tk):
     """
     Class gérant l'affichage graphique de l'application
@@ -654,6 +653,9 @@ class App(tk.Tk):
         else:
             self.play_stop_button["state"] = tk.DISABLED
 
+        # Uncomment to activate the button even when the glove is not connected
+        # self.play_stop_button["state"] = tk.NORMAL
+
     def del_perf(self):
         if messagebox.askyesno("Supprimer ?", "Êtes-vous sûr de vouloir supprimer la performance ?"):
             id_perf = self.perf_name_combo_to_data[self.perf_combo_var.get()][0]
@@ -680,6 +682,3 @@ class App(tk.Tk):
         grp.graphique_BPM_moyen(self.connexion_bd, id_musicien, id_morceau, fen_stat)
         grp.graphique_nb_fausses_notes(self.connexion_bd, id_musicien, id_morceau, fen_stat)
         grp.graphique_precision(self.connexion_bd, id_musicien, id_morceau, fen_stat)
-
-
-
