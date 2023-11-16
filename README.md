@@ -1,18 +1,18 @@
 # Projet P2I-2 2023 : <br/> GET BETTER AT PIANO !
 
-(Un gant pour ~~pour les gouverner tous~~ apprendre à jouer au piano)*
+*(Un gant pour ~~pour les gouverner tous~~ apprendre à jouer au piano)*
 
 ## Description du projet
 
-Notre projet de Parcours d'Initiation à l'Ingénierie est un gant équipé de capteur permettant de s'améliorer au piano.
+Notre projet de **Parcours d'Initiation à l'Ingénierie** est un gant équipé de capteurs permettant de s'améliorer au piano.
 
 <div align="center">
     <img src=Images/gant.png width=400>
 </div> &nbsp;
 
-Le concept est realtivement simple : Nous avons une ✨*magnifique*✨  application faisant défiler les touches sur lesquelles l'on doit appuyer tout au long du morceau. 
+Le fonctionnement est realtivement simple : Nous avons une ✨*magnifique*✨  application faisant défiler les touches sur lesquelles l'on doit appuyer tout au long du morceau. 
 
-Pendant ce temps le gant et le micro vont enregistrer de nombreuses informations (fréquence, pression sur les doigts, accélération de la main, fréquence cardiaque, etc) qui sont envoyées à l'application. 
+Pendant ce temps les capteurs du gant et le micro vont enregistrer de nombreuses informations (fréquence, pression sur les doigts, accélération de la main, fréquence cardiaque, etc) qui sont envoyées à l'application. 
 
 <div align="center">
     <img src=Images/play_mode.gif width=400>
@@ -21,10 +21,11 @@ Pendant ce temps le gant et le micro vont enregistrer de nombreuses informations
 À la fin du morceau, les données du micro et du gant sont mises en commun pour déterminer notamment quelles touches sont pressées, à quel moment et avec quel doigt. 
 On fait alors 3 choses : l'envoi des données à la base de données, une comparaison avec les note de références qui défilaient pour déterminer le nombre de fausses notes, et enfin, on passe les données à un arbre de décision préalablement entrainé pour nous donner une estimation du niveau sur la performance réalisée.
 
-Et la dernière fonctionnalitée mais non des moindres : un mode replay de la performance. Dans ce mode, les touches jouées *(en couleur et avec une couleur différente pour chaque doigt)* vont défiler en même temps que les touches de référence *(contours noires)* pour pouvoir comparer visuellement et voir où sont les erreurs.
+Et la dernière fonctionnalitée mais non des moindres : un mode replay de la performance. Dans ce mode, les touches jouées *(en couleur et avec une couleur différente pour chaque doigt)* vont défiler en même temps que les touches de référence *(contours noirs)* pour pouvoir comparer visuellement et observer où sont les erreurs.
 
 <div align="center">
-    <img src=Images/replay_mode.gif width=400>
+    <img src=Images/replay_mode.gif width=400 style="margin-right: 25px">
+    <img src=Images/graphique_retour_performance.png width=345 style="margin-left: 25px">
 </div> &nbsp;
 
 ## Détails techniques
@@ -49,15 +50,15 @@ L'application est réalisée en python avec  [tkinter](https://docs.python.org/3
 
 ### Cartes Arduino
 
-Ce projet utilise 3 cartes Arduino : 1 [Arduino Uno](https://store.arduino.cc/products/arduino-uno-rev3-smd) et 2 [Arduino MKR WAN 1310](https://store.arduino.cc/products/arduino-mkr-wan-1310). Elle est connectée par liason série à l'ordinateur et notre application
+Ce projet utilise 3 cartes Arduino : 1 [Arduino Uno](https://store.arduino.cc/products/arduino-uno-rev3-smd) et 2 [Arduino MKR WAN 1310](https://store.arduino.cc/products/arduino-mkr-wan-1310).
 
-La carte UNO est utilisée uniquement pour le micro afin de pouvoir faire de l'analyse fréquencielle plus rapidement que sur une MKR WAN (voir [Analyse fréquencielle du signal du micro](#analyse-fréquencielle-du-signal-du-micro)).
+La carte UNO est utilisée uniquement pour le micro afin de pouvoir faire de l'analyse fréquencielle plus souvent que sur une MKR WAN (voir [Analyse fréquencielle du signal du micro](#analyse-fréquencielle-du-signal-du-micro)). Elle est connectée par liason série à l'ordinateur et notre application.
 
 <div align="center">
     <img src=Images/micro.png width=400>
 </div> &nbsp;
 
-La première carte MKR WAN est celle du gant. Elle est en charge de récupérer toute les données des capteurs puis de les envoyer par communication [LoRa](https://fr.wikipedia.org/wiki/LoRaWAN#Modulation_LoRa) à la seconde MKR WAN qui va finalement les transmettre par liaison série à notre application.
+La première carte MKR WAN est celle du gant. Elle est en charge de récupérer toutes les données des capteurs puis de les envoyer par communication [LoRa](https://fr.wikipedia.org/wiki/LoRaWAN#Modulation_LoRa) à la seconde MKR WAN qui va finalement les transmettre par liaison série à notre application.
 
 #### Libraries utilisées
 
@@ -81,12 +82,13 @@ Le passage de la fréquence à la note jouée se fait dans l'application python 
 
 La [librairie de FFT utilisée](https://github.com/polo-diemunsch/projet-p2i/blob/main/Arduino/Micro/Fixed16FFT.h) est celle implémentée par [Klafyvel](https://github.com/Klafyvel/AVR-FFT) et que j'ai légèrement modifié pour correspondre à notre cas d'utilisation. En effet, on ne cherche pas seulement la fréquence principale mais les 5 de plus grandes amplitudes pour pouvoir détecter l'appui de plusieurs touches en même temps.
 
-Malgré toutes les optimisations implémentées dans la library, sur une carte MKR WAN effectuer une FFT de 512 valeurs chacune codée sur 16 bits prennait 50 à 100 ms et donc beaucoup trop long pour notre utilisation (certaines notes durent moins de 100 ms).
-On a donc utilisé une carte UNO spécialement pour le micro car elle pouvait faire la FFT entre 12 et 16 ms, ce qui était suffisant pour notre application.
+Sur une carte MKR WAN l'opération analogRead permettant de lire une valeur du micro prend entre 25 et 50 µs. Comme il nous faut 512 valeurs pour réaliser une FFT assez pertinente, et en ajoutant le temps de réaliser la FFT car la library bien optimisée présentée n'est pas compatible avec la MKR WAN, on optenait des valeurs trop peu souvent pour être vraiment précis dans le traitement des données.
+
+On utilise donc une carte UNO spécialement pour le micro car elle pouvait réaliser une mesure toutes les 12 à 16 µs et est compatible avec la *super library de FFT*, ce qui était suffisant pour notre cas de figure.
 
 ## Disclaimer
 
-Le gant a été démonté à la fin du semestre et la base de données sera supprimée. Ce repo sert donc de compte rendu et peut être une inspiration mais le projet en lui même n'est maintenant plus utilisable en tant que tel.
+Le gant a été démonté à la fin du semestre et la base de données sera supprimée. Ce repo sert donc de compte rendu et peut être une inspiration mais le projet en lui même n'est maintenant plus utilisable.
 
 ## Auteurs
 
