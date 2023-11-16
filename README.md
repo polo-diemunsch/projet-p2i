@@ -6,20 +6,26 @@
 
 Notre projet de Parcours d'Initiation à l'Ingénierie est un gant équipé de capteur permettant de s'améliorer au piano.
 
-<img src=Images/gant.png width=400> &nbsp;
+<div align="center">
+    <img src=Images/gant.png width=400>
+</div> &nbsp;
 
 Le concept est realtivement simple : Nous avons une ✨*magnifique*✨  application faisant défiler les touches sur lesquelles l'on doit appuyer tout au long du morceau. 
 
 Pendant ce temps le gant et le micro vont enregistrer de nombreuses informations (fréquence, pression sur les doigts, accélération de la main, fréquence cardiaque, etc) qui sont envoyées à l'application. 
 
-<img src=Images/play_mode.gif width=400> &nbsp;
+<div align="center">
+    <img src=Images/play_mode.gif width=400>
+</div> &nbsp;
 
 À la fin du morceau, les données du micro et du gant sont mises en commun pour déterminer notamment quelles touches sont pressées, à quel moment et avec quel doigt. 
 On fait alors 3 choses : l'envoi des données à la base de données, une comparaison avec les note de références qui défilaient pour déterminer le nombre de fausses notes, et enfin, on passe les données à un arbre de décision préalablement entrainé pour nous donner une estimation du niveau sur la performance réalisée.
 
 Et la dernière fonctionnalitée mais non des moindres : un mode replay de la performance. Dans ce mode, les touches jouées *(en couleur et avec une couleur différente pour chaque doigt)* vont défiler en même temps que les touches de référence *(contours noires)* pour pouvoir comparer visuellement et voir où sont les erreurs.
 
-<img src=Images/replay_mode.gif width=400> &nbsp;
+<div align="center">
+    <img src=Images/replay_mode.gif width=400>
+</div> &nbsp;
 
 ## Détails techniques
 
@@ -47,7 +53,9 @@ Ce projet utilise 3 cartes Arduino : 1 [Arduino Uno](https://store.arduino.cc/pr
 
 La carte UNO est utilisée uniquement pour le micro afin de pouvoir faire de l'analyse fréquencielle plus rapidement que sur une MKR WAN (voir [Analyse fréquencielle du signal du micro](#analyse-fréquencielle-du-signal-du-micro)).
 
-<img src=Images/micro.png width=400> &nbsp;
+<div align="center">
+    <img src=Images/micro.png width=400>
+</div> &nbsp;
 
 La première carte MKR WAN est celle du gant. Elle est en charge de récupérer toute les données des capteurs puis de les envoyer par communication [LoRa](https://fr.wikipedia.org/wiki/LoRaWAN#Modulation_LoRa) à la seconde MKR WAN qui va finalement les transmettre par liaison série à notre application.
 
@@ -71,7 +79,7 @@ Pour passer du signal de volume sonore du micro à connaître quelle touche du p
 
 Le passage de la fréquence à la note jouée se fait dans l'application python lorsqu'elle reçoit les données.
 
-La librairie de FFT utilisée est celle implémentée par [Klafyvel](https://github.com/Klafyvel/AVR-FFT) et que j'ai légèrement modifié pour correspondre à notre cas d'utilisation. En effet, on ne cherche pas seulement la fréquence principale mais les 5 de plus grandes amplitudes pour pouvoir détecter l'appui de plusieurs touches en même temps.
+La [librairie de FFT utilisée](https://github.com/polo-diemunsch/projet-p2i/blob/main/Arduino/Micro/Fixed16FFT.h) est celle implémentée par [Klafyvel](https://github.com/Klafyvel/AVR-FFT) et que j'ai légèrement modifié pour correspondre à notre cas d'utilisation. En effet, on ne cherche pas seulement la fréquence principale mais les 5 de plus grandes amplitudes pour pouvoir détecter l'appui de plusieurs touches en même temps.
 
 Malgré toutes les optimisations implémentées dans la library, sur une carte MKR WAN effectuer une FFT de 512 valeurs chacune codée sur 16 bits prennait 50 à 100 ms et donc beaucoup trop long pour notre utilisation (certaines notes durent moins de 100 ms).
 On a donc utilisé une carte UNO spécialement pour le micro car elle pouvait faire la FFT entre 12 et 16 ms, ce qui était suffisant pour notre application.
